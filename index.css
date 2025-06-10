@@ -64,6 +64,14 @@ header h1 {
     align-items: center;
     gap: 10px;
 }
+header h1 a { /* Style for the link within H1 */
+    text-decoration: none;
+    color: inherit; /* Inherit color from parent H1 */
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
 
 .chef-hat-icon-title { /* General style for the title icon in header */
     fill: var(--sousie-orange);
@@ -93,7 +101,7 @@ header h1 {
 }
 
 
-#controls-area {
+#main-nav { /* Changed from #controls-area to #main-nav for semantic HTML */
     display: flex;
     align-items: center;
     gap: 15px;
@@ -169,7 +177,7 @@ header h1 {
     text-overflow: ellipsis;
 }
 
-#auth-button { /* Was #login-button */
+#auth-button {
     background-color: transparent;
     color: var(--sousie-text-on-dark);
     border: 1px solid var(--sousie-text-on-dark);
@@ -198,64 +206,62 @@ header h1 {
 }
 
 main {
-    flex-grow: 1; /* Allows main to take up remaining vertical space */
-    display: flex; /* Make main a flex container to manage its children (views) */
-    flex-direction: column; /* Stack views vertically (though only one is visible) */
-    overflow: hidden; /* Important for child view to control its own scrolling */
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
     background-color: var(--sousie-light-cream);
 }
 
 
-#results-container,
-#menu-planner-view,
-#favorites-view {
-    flex-grow: 1; /* Each view takes available space in main */
-    overflow-y: auto; /* Allows scrolling within the active view */
-    display: flex; /* Make view a flex container for its own content */
-    flex-direction: column; /* Stack content vertically within the view */
-    align-items: flex-start; /* Ensure children align to the left */
+#results-container, /* For index.html */
+#menu-planner-view-content, /* For menu.html */
+#favorites-view-content { /* For favorites.html */
+    flex-grow: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
     gap: 20px;
     padding: 25px;
-    position: relative; /* For potential absolute positioned children */
+    position: relative;
 }
 
 
 #results-container.content-stale-for-unit-update > *,
-#menu-planner-view.content-stale-for-unit-update > *,
-#favorites-view.content-stale-for-unit-update > * {
+#menu-planner-view-content.content-stale-for-unit-update > *, /* Updated ID */
+#favorites-view-content.content-stale-for-unit-update > * { /* Updated ID */
     opacity: 0.4;
     pointer-events: none;
     transition: opacity 0.3s ease-in-out;
 }
 
-/* --- Menu Planner & Favorites Specific --- */
-.hidden-view {
-    display: none !important; /* Force hide inactive view */
-}
-
+/* --- Menu Planner & Favorites Specific Header Controls --- */
 #menu-planner-header-controls,
 #favorites-header-controls {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    width: 100%; /* Ensure it spans the width */
-    margin-bottom: 10px; /* Add some space below */
+    width: 100%;
+    margin-bottom: 10px;
 }
 
 #menu-planner-header-controls h2,
 #favorites-header-controls h2 {
     color: var(--sousie-navy);
-    font-size: 1.5em; /* Match results container h2 */
+    font-size: 1.5em;
     font-weight: 700;
     border-bottom: 2px solid var(--sousie-orange);
     padding-bottom: 8px;
-    margin: 0; /* Remove default margin from h2 */
+    margin: 0;
 }
 
-.control-button { /* For Menu Planner/Favorites header buttons and Back to Recipes */
-    background-color: var(--sousie-orange);
+/* Styles for navigation links in the header, including .control-button */
+.nav-link.control-button {
+    text-decoration: none;
+    background-color: transparent;
     color: var(--sousie-text-on-dark);
-    border: none;
+    border: 1px solid var(--sousie-text-on-dark);
     padding: 8px 15px;
     border-radius: var(--border-radius-pill);
     font-size: 0.9em;
@@ -264,35 +270,40 @@ main {
     transition: background-color 0.2s, color 0.2s, border-color 0.2s;
     white-space: nowrap;
 }
-.control-button:hover {
-    background-color: #E66A20;
-}
-/* Specific for header menu planner/favorites button to match auth button style */
-header #menu-planner-button.control-button,
-header #favorites-button.control-button {
-    background-color: transparent;
-    color: var(--sousie-text-on-dark);
-    border: 1px solid var(--sousie-text-on-dark);
-}
-header #menu-planner-button.control-button:hover,
-header #menu-planner-button.control-button.active,
-header #favorites-button.control-button:hover,
-header #favorites-button.control-button.active {
+.nav-link.control-button:hover,
+.nav-link.control-button.active { /* For active page link */
     background-color: var(--sousie-orange);
     border-color: var(--sousie-orange);
-    color: var(--sousie-text-on-dark); /* Ensure text remains white on orange bg */
+    color: var(--sousie-text-on-dark);
+}
+
+/* Specific style for "Back to Recipes" button if it's not a nav link */
+.control-button:not(.nav-link) {
+    background-color: var(--sousie-orange);
+    color: var(--sousie-text-on-dark);
+    border: none;
+    padding: 8px 15px;
+    border-radius: var(--border-radius-pill);
+    font-size: 0.9em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    white-space: nowrap;
+}
+.control-button:not(.nav-link):hover {
+    background-color: #E66A20;
 }
 
 
 #menu-planner-messages,
-#favorites-messages { /* Container for messages in menu planner/favorites */
-    width: 100%; /* Take full width to allow internal centering of .message */
+#favorites-messages {
+    width: 100%;
 }
 #menu-planner-messages .message,
 #favorites-messages .message {
-    width: 100%; /* Allow .message to be full width if not fit-content */
-    max-width: 90%; /* But constrain it a bit for readability */
-    margin-left: auto; /* Center the message box itself */
+    width: 100%;
+    max-width: 90%;
+    margin-left: auto;
     margin-right: auto;
 }
 
@@ -301,7 +312,7 @@ header #favorites-button.control-button.active {
     display: flex;
     gap: 15px;
     align-items: center;
-    flex-wrap: wrap; /* Allow controls to wrap on smaller screens */
+    flex-wrap: wrap;
     margin-bottom: 20px;
     width: 100%;
 }
@@ -328,8 +339,8 @@ header #favorites-button.control-button.active {
 #menu-planner-controls select {
     background-color: #fff;
     color: var(--sousie-navy);
-    min-width: 200px; /* Give select some base width */
-    flex-grow: 1; /* Allow it to grow */
+    min-width: 200px;
+    flex-grow: 1;
 }
 #menu-planner-controls select:focus {
     outline: none;
@@ -344,13 +355,13 @@ header #favorites-button.control-button.active {
     border-color: #FFB07D;
 }
 #menu-planner-controls.has-saved-menus #saved-menus-dropdown {
-    display: inline-block; /* Or flex, depending on parent */
+    display: inline-block;
 }
 
 
 #weekly-menu-display h2,
 #grocery-list-display h2,
-#favorite-recipes-display h2 { /* Favorites view also has an implicit h2 via JS */
+#favorite-recipes-display h2 {
     color: var(--sousie-navy);
     font-size: 1.4em;
     font-weight: 700;
@@ -360,8 +371,8 @@ header #favorites-button.control-button.active {
     width: 100%;
 }
 
-.weekly-menu-grid, /* Grid for day cards in menu planner */
-#favorite-recipes-display .recipes-grid { /* Grid for favorite recipe cards */
+.weekly-menu-grid,
+#favorite-recipes-display .recipes-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 20px;
@@ -389,7 +400,7 @@ header #favorites-button.control-button.active {
     line-height: 1.5;
     color: var(--sousie-text-on-light);
     margin-bottom: 12px;
-    flex-grow: 1; /* Allow description to push button down */
+    flex-grow: 1;
 }
 .day-card .recipe-details {
     border-top: 1px dashed #D0C9BF;
@@ -434,10 +445,8 @@ header #favorites-button.control-button.active {
     height: 18px;
 }
 
-/* --- END Menu Planner Specific --- */
 
-
-#results-container h2 { /* For initial recipe suggestions view title */
+#results-container h2 {
     color: var(--sousie-navy);
     font-size: 1.5em;
     font-weight: 700;
@@ -447,11 +456,11 @@ header #favorites-button.control-button.active {
     width: 100%;
 }
 
-.recipes-grid { /* For recipe suggestions view */
+.recipes-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
     gap: 20px;
-    width: 100%; /* Ensure grid takes full width if align-items: flex-start is on parent */
+    width: 100%;
 }
 
 .recipe-card {
@@ -476,7 +485,7 @@ header #favorites-button.control-button.active {
     font-size: 1.3em;
     font-weight: 700;
     margin-bottom: 10px;
-    padding-right: 35px; /* Space for like button */
+    padding-right: 35px;
 }
 
 .recipe-summary p {
@@ -484,7 +493,7 @@ header #favorites-button.control-button.active {
     line-height: 1.6;
     color: var(--sousie-text-on-light);
     margin-bottom: 15px;
-    flex-grow: 1; /* Allow summary text to grow and push button to bottom */
+    flex-grow: 1;
 }
 
 .sousie-extra-info {
@@ -545,7 +554,7 @@ header #favorites-button.control-button.active {
 .like-button svg {
     width: 24px;
     height: 24px;
-    fill: #D0C9BF; /* Default unliked color */
+    fill: #D0C9BF;
     transition: fill 0.2s ease, transform 0.2s ease;
 }
 
@@ -555,7 +564,7 @@ header #favorites-button.control-button.active {
 }
 
 .like-button.liked svg {
-    fill: var(--sousie-orange); /* Liked color */
+    fill: var(--sousie-orange);
 }
 
 .like-button:active {
@@ -576,7 +585,7 @@ header #favorites-button.control-button.active {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    margin-top: auto; /* Push to bottom of flex container (recipe-summary or day-card-summary) */
+    margin-top: auto;
 }
 .expand-toggle svg.toggle-icon path {
     fill: var(--sousie-orange);
@@ -650,21 +659,21 @@ header #favorites-button.control-button.active {
     text-align: center;
     font-size: 1em;
     font-weight: 600;
-    display: flex; /* Centers icon and text within the message box */
-    align-items: center; /* Centers icon and text within the message box */
-    justify-content: center; /* Centers icon and text within the message box */
+    display: flex;
+    align-items: center;
+    justify-content: center;
     gap: 10px;
-    width: fit-content; /* Allow message box to size to its content */
+    width: fit-content;
 }
 
 /* Specific message types - for centering the message box itself */
 .error-message,
 .info-message {
-    margin: 10px auto; /* Re-apply auto margins for horizontal centering */
-    max-width: 80%; /* Re-apply max-width for these specific messages */
+    margin: 10px auto;
+    max-width: 80%;
 }
 
-.error-message { /* General error message for results container */
+.error-message {
     background-color: #FFEBEB;
     color: #C0392B;
     border: 1px solid #F5C6CB;
@@ -684,8 +693,6 @@ header #favorites-button.control-button.active {
     font-size: 1.2em;
     padding: 25px 30px;
     gap: 15px;
-    /* Positioned at the top-left due to parent's align-items: flex-start */
-    /* No margin: auto here */
 }
 
 
@@ -697,9 +704,9 @@ footer {
 }
 
 #input-area {
-    display: flex; /* Changed from grid */
-    flex-direction: column; /* Stack inputs and button wrapper */
-    gap: 15px; /* Space between inputs and button wrapper */
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
 }
 
 #ingredients-input, #dietary-input {
@@ -711,8 +718,7 @@ footer {
     background-color: #fff;
     height: 50px;
     color: var(--sousie-text-on-light);
-    width: 100%; /* Take full width within the flex column */
-    /* Removed grid-column and specific margin-bottom for grid */
+    width: 100%;
 }
 #ingredients-input::placeholder, #dietary-input::placeholder {
     color: #A09A90;
@@ -727,7 +733,7 @@ footer {
 #action-buttons-wrapper {
     display: flex;
     gap: 10px;
-    flex-wrap: wrap; /* Allow buttons to wrap on smaller screens */
+    flex-wrap: wrap;
 }
 
 #suggest-button, #surprise-button, #start-over-button {
@@ -744,8 +750,8 @@ footer {
     font-size: 0.95rem;
     font-weight: 700;
     gap: 8px;
-    flex: 1 1 auto; /* Allow buttons to grow and shrink */
-    min-width: 150px; /* Prevent buttons from becoming too small before wrapping */
+    flex: 1 1 auto;
+    min-width: 150px;
     box-shadow: var(--sousie-subtle-shadow);
 }
 #suggest-button svg, #surprise-button svg, #start-over-button svg {
@@ -776,9 +782,9 @@ footer {
 #suggest-button:disabled, #surprise-button:disabled, #start-over-button:disabled,
 #ingredients-input:disabled, #dietary-input:disabled,
 .unit-button:disabled, #auth-button:disabled,
-#menu-planner-button:disabled, #favorites-button:disabled, #generate-weekly-menu-button:disabled,
-#save-current-menu-button:disabled, #saved-menus-dropdown:disabled,
-#back-to-recipes-button:disabled, #back-to-recipes-from-favorites-button:disabled {
+.control-button:disabled, /* General for nav links if needed */
+#generate-weekly-menu-button:disabled,
+#save-current-menu-button:disabled, #saved-menus-dropdown:disabled {
     cursor: not-allowed;
     opacity: 0.6;
     box-shadow: none;
@@ -810,16 +816,14 @@ footer {
     opacity: 0.5 !important;
 }
 
-/* Ensure control buttons in header are also disabled correctly */
-header #menu-planner-button.control-button:disabled,
-header #favorites-button.control-button:disabled {
+/* Ensure control buttons (nav links) in header are also disabled correctly */
+header .nav-link.control-button:disabled {
      background-color: transparent !important;
     border-color: rgba(255, 255, 255, 0.4) !important;
     color: rgba(255, 255, 255, 0.4) !important;
 }
-header #menu-planner-button.control-button.active:disabled,
-header #favorites-button.control-button.active:disabled {
-    background-color: var(--sousie-orange) !important; /* Keep active color but with opacity */
+header .nav-link.control-button.active:disabled {
+    background-color: var(--sousie-orange) !important;
     opacity: 0.5 !important;
 }
 
@@ -831,7 +835,7 @@ header #favorites-button.control-button.active:disabled {
 
 /* --- MODAL STYLES --- */
 .modal {
-    display: none; /* Hidden by default */
+    display: none;
     position: fixed;
     top: 0;
     left: 0;
@@ -843,7 +847,7 @@ header #favorites-button.control-button.active:disabled {
 }
 
 .modal.is-open {
-    display: flex; /* Shown when .is-open is added */
+    display: flex;
 }
 
 .modal-overlay {
@@ -864,7 +868,7 @@ header #favorites-button.control-button.active:disabled {
     max-width: 450px;
     padding: 25px 30px;
     z-index: calc(var(--modal-z-index) + 1);
-    animation: modal-container-show 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Slight overshoot */
+    animation: modal-container-show 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     max-height: 90vh;
     overflow-y: auto;
 }
@@ -947,7 +951,7 @@ header #favorites-button.control-button.active:disabled {
     width: 100%;
 }
 .modal-button:hover {
-    background-color: #E66A20; /* Darker orange */
+    background-color: #E66A20;
 }
 .modal-button:disabled {
     background-color: #FFB07D;
@@ -981,7 +985,7 @@ header #favorites-button.control-button.active:disabled {
     border-radius: 6px;
     font-size: 0.9em;
     text-align: center;
-    display: none; /* Hidden by default, shown by JS */
+    display: none;
 }
 .modal-message.error {
     background-color: #F8D7DA;
@@ -1009,28 +1013,28 @@ header #favorites-button.control-button.active:disabled {
 
 /* Scrollbar styling for views */
 #results-container::-webkit-scrollbar,
-#menu-planner-view::-webkit-scrollbar,
-#favorites-view::-webkit-scrollbar {
+#menu-planner-view-content::-webkit-scrollbar, /* Updated ID */
+#favorites-view-content::-webkit-scrollbar { /* Updated ID */
     width: 10px;
 }
 
 #results-container::-webkit-scrollbar-track,
-#menu-planner-view::-webkit-scrollbar-track,
-#favorites-view::-webkit-scrollbar-track {
+#menu-planner-view-content::-webkit-scrollbar-track, /* Updated ID */
+#favorites-view-content::-webkit-scrollbar-track { /* Updated ID */
     background: var(--sousie-light-cream);
     border-radius: 10px;
 }
 
 #results-container::-webkit-scrollbar-thumb,
-#menu-planner-view::-webkit-scrollbar-thumb,
-#favorites-view::-webkit-scrollbar-thumb {
+#menu-planner-view-content::-webkit-scrollbar-thumb, /* Updated ID */
+#favorites-view-content::-webkit-scrollbar-thumb { /* Updated ID */
     background: #FFB07D;
     border-radius: 10px;
 }
 
 #results-container::-webkit-scrollbar-thumb:hover,
-#menu-planner-view::-webkit-scrollbar-thumb:hover,
-#favorites-view::-webkit-scrollbar-thumb:hover {
+#menu-planner-view-content::-webkit-scrollbar-thumb:hover, /* Updated ID */
+#favorites-view-content::-webkit-scrollbar-thumb:hover { /* Updated ID */
     background: var(--sousie-orange);
 }
 
@@ -1044,16 +1048,16 @@ header #favorites-button.control-button.active:disabled {
         width: 28px;
         height: 28px;
     }
-    #controls-area {
+    #main-nav { /* Updated from #controls-area */
         gap: 10px;
     }
     #auth-section {
         gap: 8px;
     }
     #user-info {
-        max-width: 100px; /* Shorter on smaller screens */
+        max-width: 100px;
     }
-    .unit-button {
+    .unit-button, .nav-link.control-button { /* Updated for nav links */
         padding: 6px 10px;
         font-size: 0.8em;
     }
@@ -1062,12 +1066,11 @@ header #favorites-button.control-button.active:disabled {
         padding: 6px 10px;
     }
     .recipes-grid, .weekly-menu-grid {
-        grid-template-columns: 1fr; /* Single column for recipe/day cards */
+        grid-template-columns: 1fr;
     }
 
-    /* Footer adjustments for smaller screens */
     #action-buttons-wrapper button {
-        min-width: calc(50% - 5px); /* Two buttons per row, considering gap */
+        min-width: calc(50% - 5px);
     }
 }
 
@@ -1081,10 +1084,10 @@ header #favorites-button.control-button.active:disabled {
         margin-right: 0;
         font-size: 1.5em;
     }
-    #controls-area {
+    #main-nav { /* Updated from #controls-area */
         width: 100%;
         justify-content: space-around;
-        flex-wrap: wrap; /* Allow header controls to wrap */
+        flex-wrap: wrap;
     }
     .modal-container {
         width: 95%;
@@ -1095,12 +1098,12 @@ header #favorites-button.control-button.active:disabled {
     }
 
     #action-buttons-wrapper button {
-        min-width: 100%; /* Stack buttons in footer */
+        min-width: 100%;
         flex-basis: 100%;
     }
     #menu-planner-controls button,
     #menu-planner-controls select {
-        flex-basis: 100%; /* Stack menu planner controls */
+        flex-basis: 100%;
         min-width: unset;
     }
 }
@@ -1117,10 +1120,14 @@ header #favorites-button.control-button.active:disabled {
         box-shadow: none;
         border: none;
     }
-    #results-container, #menu-planner-view, #favorites-view {
+    #results-container, 
+    #menu-planner-view-content, /* Updated ID */
+    #favorites-view-content { /* Updated ID */
         padding: 15px;
     }
-    #results-container h2, #menu-planner-header-controls h2, #favorites-header-controls h2 {
+    #results-container h2, 
+    #menu-planner-header-controls h2, 
+    #favorites-header-controls h2 {
         font-size: 1.3em;
     }
     .recipe-summary h3 {

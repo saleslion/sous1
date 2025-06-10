@@ -1,0 +1,6 @@
+{
+  "name": "AI Cooking Assistant",
+  "description": "Suggests recipes based on ingredients and offers surprise recipe ideas.",
+  "requestFramePermissions": [],
+  "prompt": ""
+}

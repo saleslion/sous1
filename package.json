@@ -1,0 +1,13 @@
+{
+  "name": "sousie-ai-cooking-assistant",
+  "version": "1.0.0",
+  "description": "AI Cooking Assistant - Sousie",
+  "private": true,
+  "scripts": {
+    "build": "esbuild index.tsx --bundle --outfile=dist/index.js --format=esm --loader:.tsx=ts --external:@google/genai --define:process.env.API_KEY=\\\"\"$API_KEY\\\"\" --define:process.env.SUPABASE_URL=\\\"\"$SUPABASE_URL\\\"\" --define:process.env.SUPABASE_ANON_KEY=\\\"\"$SUPABASE_ANON_KEY\\\"\"",
+    "dev": "esbuild index.tsx --bundle --outfile=dist/index.js --format=esm --loader:.tsx=ts --external:@google/genai --define:process.env.API_KEY=\\\"\"$API_KEY\\\"\" --define:process.env.SUPABASE_URL=\\\"\"$SUPABASE_URL\\\"\" --define:process.env.SUPABASE_ANON_KEY=\\\"\"$SUPABASE_ANON_KEY\\\"\" --servedir=. --watch"
+  },
+  "devDependencies": {
+    "esbuild": "^0.20.0"
+  }
+}

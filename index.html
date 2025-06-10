@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Cooking Assistant - Sousie</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="index.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script type="importmap">
+      {
+        "imports": {
+          "@google/genai": "https://esm.sh/@google/genai@^0.15.0"
+        }
+      }
+    </script>
+<link rel="stylesheet" href="/index.css">
+</head>
+<body>
+    <div id="app-container">
+        <header>
+            <h1>
+                <svg class="chef-hat-icon-title" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="36" height="36"><path d="M429.1 202.4C424.4 194.2 416.2 188.4 406.4 185.9C405.3 185.6 404.2 185.3 403 185.1C388.9 104.3 324.9 32 256 32S123.1 104.3 109 185.1C107.8 185.3 106.7 185.6 105.6 185.9C95.8 188.4 87.6 194.2 82.9 202.4C74.3 217.7 75.1 239.5 84.9 253.9C90.5 262.3 98.4 268.3 107.5 271.6C108.9 272 110.4 272.3 111.8 272.5C118.9 317.9 148.4 368.3 192.3 397.6C189.6 402.2 187.5 407.2 186.2 412.4C180.9 431.8 190.2 452.4 207.6 462.9C224.2 472.9 245.8 472.3 261.8 461.2C263.3 460.1 264.7 458.9 266 457.6C275.6 468.6 288.2 477.5 302.1 482.8C305.2 483.9 308.5 484.8 311.8 485.4C312.5 485.5 313.2 485.6 313.8 485.7C315.3 486 316.8 486.3 318.3 486.5C320.6 486.7 323 486.9 325.3 487C326.1 487 326.8 487.1 327.5 487.1C347.1 487.1 364.5 477.5 375.4 461.7C379.8 455.5 382.4 448.4 382.8 440.9C382.9 440.5 382.9 440.1 382.9 439.6C423.2 399.8 450.7 338.4 451.5 273C452.5 272.6 453.6 272.3 454.6 271.9C463.7 268.6 471.6 262.5 477.1 254.1C486.9 239.7 487.7 217.9 479.1 202.6L479.1 202.6L429.1 202.4z"/></svg>
+                Sousie
+            </h1>
+            <div id="controls-area">
+                <span id="supabase-status-indicator">DB Not Configured</span>
+                <button id="favorites-button" class="control-button" aria-label="View your favorite recipes">My Favorites</button>
+                <button id="menu-planner-button" class="control-button" aria-label="Open weekly menu planner">Menu Planner</button>
+                <div id="unit-toggle-buttons">
+                    <button id="us-units-button" class="unit-button active" aria-pressed="true" aria-label="Switch to US customary units">US Units</button>
+                    <button id="metric-units-button" class="unit-button" aria-pressed="false" aria-label="Switch to Metric units">Metric Units</button>
+                </div>
+                <div id="auth-section">
+                    <span id="user-info" aria-live="polite"></span>
+                    <button id="auth-button" aria-label="Login or manage account">
+                        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"><path d="M480-480q-66 0-113-47t-47-113q0-66 47-113t113-47q66 0 113 47t47 113q0 66-47 113t-113 47ZM160-160v-112q0-34 17.5-62.5T224-378q62-31 126-46.5T480-440q66 0 130 15.5T736-378q29 15 46.5 43.5T800-272v112H160Z"/></svg>
+                        <span id="auth-button-text">Login</span>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <main>
+            <div id="results-container">
+                <!-- Recipe suggestion content goes here -->
+            </div>
+
+            <div id="menu-planner-view" class="hidden-view">
+                <div id="menu-planner-header-controls">
+                    <h2>Weekly Menu Planner</h2>
+                    <button id="back-to-recipes-button" class="control-button">Back to Recipes</button>
+                </div>
+                <div id="menu-planner-messages" style="display: none;">
+                    <!-- Menu planner specific messages will appear here -->
+                </div>
+                <div id="menu-planner-controls">
+                    <button id="generate-weekly-menu-button">Generate Weekly Menu</button>
+                    <button id="save-current-menu-button" style="display: none;">Save Current Menu</button>
+                    <select id="saved-menus-dropdown" style="display: none;">
+                        <option value="">Login to see saved menus</option>
+                    </select>
+                </div>
+                <div id="weekly-menu-display">
+                    <!-- Day cards will be injected here -->
+                </div>
+                <div id="grocery-list-display">
+                    <!-- Grocery list will be injected here -->
+                </div>
+            </div>
+
+            <div id="favorites-view" class="hidden-view">
+                 <div id="favorites-header-controls">
+                    <h2>My Favorite Recipes</h2>
+                    <button id="back-to-recipes-from-favorites-button" class="control-button">Back to Recipes</button>
+                </div>
+                <div id="favorites-messages" style="display: none;">
+                    <!-- Favorites specific messages will appear here -->
+                </div>
+                <div id="favorite-recipes-display">
+                    <!-- Favorite recipe cards will be injected here -->
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <div id="input-area">
+                <input type="text" id="ingredients-input" placeholder="What ingredients do you have? (e.g., chicken, broccoli, rice)" aria-label="Ingredients input">
+                <input type="text" id="dietary-input" placeholder="Any dietary preferences? (e.g., vegetarian, gluten-free)" aria-label="Dietary preferences input">
+                <div id="action-buttons-wrapper">
+                    <button id="suggest-button" aria-label="Suggest recipes based on input">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5A6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+                        Suggest Recipes
+                    </button>
+                    <button id="surprise-button" aria-label="Get surprise recipe suggestions">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v2h-2zm0 4h2v6h-2z"/></svg>
+                        Surprise Me!
+                    </button>
+                    <button id="start-over-button" aria-label="Clear inputs and results">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/></svg>
+                        Start Over
+                    </button>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Modals -->
+    <div id="login-modal" class="modal" aria-labelledby="login-modal-title" aria-hidden="true" role="dialog">
+        <div class="modal-overlay" tabindex="-1"></div>
+        <div class="modal-container" role="document">
+            <div class="modal-header">
+                <h2 id="login-modal-title" class="modal-title">Login to Sousie</h2>
+                <button class="modal-close" aria-label="Close login dialog">&times;</button>
+            </div>
+            <div class="modal-content">
+                <form id="login-form">
+                    <div id="login-message" class="modal-message" role="alert" aria-live="assertive"></div>
+                    <div class="form-group">
+                        <label for="login-email">Email Address</label>
+                        <input type="email" id="login-email" name="email" required autocomplete="email">
+                    </div>
+                    <div class="form-group">
+                        <label for="login-password">Password</label>
+                        <input type="password" id="login-password" name="password" required autocomplete="current-password">
+                    </div>
+                    <button type="submit" id="login-submit-button" class="modal-button">Login</button>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <p>Don't have an account? <button id="go-to-signup" class="link-button">Sign Up</button></p>
+            </div>
+        </div>
+    </div>
+
+    <div id="signup-modal" class="modal" aria-labelledby="signup-modal-title" aria-hidden="true" role="dialog">
+        <div class="modal-overlay" tabindex="-1"></div>
+        <div class="modal-container" role="document">
+            <div class="modal-header">
+                <h2 id="signup-modal-title" class="modal-title">Create Sousie Account</h2>
+                <button class="modal-close" aria-label="Close signup dialog">&times;</button>
+            </div>
+            <div class="modal-content">
+                <form id="signup-form">
+                    <div id="signup-message" class="modal-message" role="alert" aria-live="assertive"></div>
+                    <div class="form-group">
+                        <label for="signup-email">Email Address</label>
+                        <input type="email" id="signup-email" name="email" required autocomplete="email">
+                    </div>
+                    <div class="form-group">
+                        <label for="signup-password">Password</label>
+                        <input type="password" id="signup-password" name="password" required autocomplete="new-password">
+                        <small>Minimum 6 characters.</small>
+                    </div>
+                    <button type="submit" id="signup-submit-button" class="modal-button">Sign Up</button>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <p>Already have an account? <button id="go-to-login" class="link-button">Login</button></p>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="dist/index.js" defer></script>
+<script type="module" src="/index.tsx"></script>
+</body>
+</html>

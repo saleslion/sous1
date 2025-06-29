@@ -10,7 +10,12 @@
     "build": "npm run build:index && npm run build:menu && npm run build:favorites",
     "dev": "npm run build && esbuild --servedir=. --watch --outdir=dist index.tsx menu.tsx favorites.tsx --bundle --format=esm --loader:.tsx=ts --external:@google/genai --define:process.env.API_KEY=\\\"\"$API_KEY\\\"\" --define:process.env.SUPABASE_URL=\\\"\"$SUPABASE_URL\\\"\" --define:process.env.SUPABASE_ANON_KEY=\\\"\"$SUPABASE_ANON_KEY\\\"\""
   },
+  "type": "module",
   "devDependencies": {
     "esbuild": "^0.20.0"
+  },
+  "dependencies": {
+    "replicate": "^1.0.1",
+    "weaviate-client": "^3.6.2"
   }
 }

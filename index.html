@@ -17,21 +17,25 @@
 }
 </script>
 <link rel="stylesheet" href="/index.css">
+<link rel="stylesheet" href="chat.css">
 </head>
 <body>
-    <div id="app-container">
-        <header>
-            <h1>
+    <div id="app-container" class="chat-layout">
+        <aside id="sidebar">
+            <!-- Logo and Navigation Links will go here -->
+            <div class="sidebar-header">
                 <svg class="chef-hat-icon-title" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="36" height="36"><path d="M429.1 202.4C424.4 194.2 416.2 188.4 406.4 185.9C405.3 185.6 404.2 185.3 403 185.1C388.9 104.3 324.9 32 256 32S123.1 104.3 109 185.1C107.8 185.3 106.7 185.6 105.6 185.9C95.8 188.4 87.6 194.2 82.9 202.4C74.3 217.7 75.1 239.5 84.9 253.9C90.5 262.3 98.4 268.3 107.5 271.6C108.9 272 110.4 272.3 111.8 272.5C118.9 317.9 148.4 368.3 192.3 397.6C189.6 402.2 187.5 407.2 186.2 412.4C180.9 431.8 190.2 452.4 207.6 462.9C224.2 472.9 245.8 472.3 261.8 461.2C263.3 460.1 264.7 458.9 266 457.6C275.6 468.6 288.2 477.5 302.1 482.8C305.2 483.9 308.5 484.8 311.8 485.4C312.5 485.5 313.2 485.6 313.8 485.7C315.3 486 316.8 486.3 318.3 486.5C320.6 486.7 323 486.9 325.3 487C326.1 487 326.8 487.1 327.5 487.1C347.1 487.1 364.5 477.5 375.4 461.7C379.8 455.5 382.4 448.4 382.8 440.9C382.9 440.5 382.9 440.1 382.9 439.6C423.2 399.8 450.7 338.4 451.5 273C452.5 272.6 453.6 272.3 454.6 271.9C463.7 268.6 471.6 262.5 477.1 254.1C486.9 239.7 487.7 217.9 479.1 202.6L479.1 202.6L429.1 202.4z"/></svg>
-                Sousie
-            </h1>
-            <nav id="main-nav">
-                <span id="supabase-status-indicator">DB Not Configured</span>
-                <a href="favorites.html" id="favorites-link" class="control-button nav-link" aria-label="View your favorite recipes">My Favorites</a>
-                <a href="menu.html" id="menu-planner-link" class="control-button nav-link" aria-label="Open weekly menu planner">Menu Planner</a>
-                <div id="unit-toggle-buttons">
-                    <button id="us-units-button" class="unit-button active" aria-pressed="true" aria-label="Switch to US customary units">US Units</button>
-                    <button id="metric-units-button" class="unit-button" aria-pressed="false" aria-label="Switch to Metric units">Metric Units</button>
+                <span class="sidebar-title">Sousie</span>
+            </div>
+            <nav id="sidebar-nav">
+                <a href="index.html" id="nav-chat" class="nav-link active" aria-label="Recipe Chat">Recipe Chat</a>
+                <a href="favorites.html" id="nav-favorites" class="nav-link" aria-label="View your favorite recipes">My Favorites</a>
+                <a href="menu.html" id="nav-menu-planner" class="nav-link" aria-label="Open weekly menu planner">Menu Planner</a>
+            </nav>
+            <div id="sidebar-footer">
+                 <div id="unit-toggle-buttons">
+                    <button id="us-units-button" class="unit-button active" aria-pressed="true" aria-label="Switch to US customary units">US</button>
+                    <button id="metric-units-button" class="unit-button" aria-pressed="false" aria-label="Switch to Metric units">Metric</button>
                 </div>
                 <div id="auth-section">
                     <span id="user-info" aria-live="polite"></span>
@@ -40,38 +44,35 @@
                         <span id="auth-button-text">Login</span>
                     </button>
                 </div>
-            </nav>
-        </header>
-
-        <main>
-            <div id="results-container">
-                <!-- Recipe suggestion content goes here -->
+                 <span id="supabase-status-indicator">DB Status</span>
             </div>
-        </main>
+        </aside>
 
-        <footer>
-            <div id="input-area">
-                <input type="text" id="ingredients-input" placeholder="What ingredients do you have? (e.g., chicken, broccoli, rice)" aria-label="Ingredients input">
-                <input type="text" id="dietary-input" placeholder="Any dietary preferences? (e.g., vegetarian, gluten-free)" aria-label="Dietary preferences input">
-                <div id="action-buttons-wrapper">
-                    <button id="suggest-button" aria-label="Suggest recipes based on input">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5A6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
-                        Suggest Recipes
-                    </button>
-                    <button id="surprise-button" aria-label="Get surprise recipe suggestions">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v2h-2zm0 4h2v6h-2z"/></svg>
-                        Surprise Me!
-                    </button>
-                    <button id="start-over-button" aria-label="Clear inputs and results">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/></svg>
-                        Start Over
-                    </button>
-                </div>
-            </div>
-        </footer>
+        <div id="chat-container">
+            <header id="chat-header">
+                <button id="mobile-menu-button" aria-label="Open navigation menu">
+                    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px"><path d="M0 0h24v24H0z" fill="none"/><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
+                </button>
+                <h1 id="current-view-title">Recipe Chat</h1> <!-- Title can be updated by JS -->
+                 <!-- Action buttons like "Start Over" can go here or in an options menu -->
+            </header>
+            <main id="message-list-container">
+                <!-- Messages will be appended here by JavaScript -->
+                <!-- This div will replace the old "results-container" -->
+            </main>
+            <footer id="chat-input-bar">
+                <input type="text" id="user-chat-input" placeholder="What ingredients do you have, or what can Sousie help with?" aria-label="Chat input">
+                <button id="send-chat-button" aria-label="Send message">
+                    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px"><path d="M0 0h24v24H0z" fill="none"/><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+                </button>
+                 <button id="surprise-me-button" class="chat-action-button" aria-label="Get surprise recipe suggestions">Surprise Me!</button>
+                 <button id="start-over-button" class="chat-action-button" aria-label="Clear inputs and results">Start Over</button>
+
+            </footer>
+        </div>
     </div>
 
-    <!-- Modals (common to all pages, will be initialized by core.js) -->
+    <!-- Modals (common to all pages, will be initialized by core.js) - These remain unchanged -->
     <div id="login-modal" class="modal" aria-labelledby="login-modal-title" aria-hidden="true" role="dialog">
         <div class="modal-overlay" tabindex="-1"></div>
         <div class="modal-container" role="document">
@@ -128,6 +129,5 @@
     </div>
 
     <script type="module" src="dist/index.js" defer></script>
-<script type="module" src="/index.tsx"></script>
 </body>
 </html>

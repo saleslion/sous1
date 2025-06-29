@@ -1,0 +1,400 @@
+/*
+Modern Harvest Palette:
+Primary (Deep Orange): #D95F29
+Secondary (Light Warm Gray/Taupe): #F0EBE3
+Accent 1 (Deep Red-Brown): #A24936
+Accent 2 (Gold/Mustard Yellow): #F5C542
+Text (Off-Black/Darkest Gray): #2A2B2A
+Neutral (Medium Warm Gray): #A8A39D
+*/
+
+/* Global chat layout styles */
+body {
+    font-family: 'Nunito', sans-serif;
+    margin: 0;
+    background-color: #F0EBE3; /* Secondary - Light Warm Gray/Taupe */
+    color: #2A2B2A; /* Text - Off-Black */
+}
+
+#app-container.chat-layout {
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+}
+
+/* Sidebar */
+#sidebar {
+    width: 260px;
+    background-color: #e6ddd4; /* Slightly darker than main bg for separation */
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid #d1c8bd;
+    transition: transform 0.3s ease-in-out;
+    z-index: 100; /* Ensure sidebar is above chat content on mobile */
+}
+
+.sidebar-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #d1c8bd;
+    margin-bottom: 20px;
+}
+
+.sidebar-header .chef-hat-icon-title path {
+    fill: #A24936; /* Accent 1 - Deep Red-Brown */
+}
+
+.sidebar-title {
+    font-size: 1.5em;
+    font-weight: 700;
+    color: #A24936; /* Accent 1 - Deep Red-Brown */
+}
+
+#sidebar-nav .nav-link {
+    display: block;
+    padding: 10px 15px;
+    margin-bottom: 8px;
+    text-decoration: none;
+    color: #2A2B2A; /* Text - Off-Black */
+    border-radius: 6px;
+    font-weight: 600;
+}
+
+#sidebar-nav .nav-link.active,
+#sidebar-nav .nav-link:hover {
+    background-color: #D95F29; /* Primary - Deep Orange */
+    color: #FFFFFF;
+}
+
+#sidebar-footer {
+    margin-top: auto;
+    padding-top: 20px;
+    border-top: 1px solid #d1c8bd;
+}
+
+#sidebar-footer #unit-toggle-buttons button {
+    background-color: #F0EBE3;
+    color: #D95F29;
+    border: 1px solid #D95F29;
+}
+#sidebar-footer #unit-toggle-buttons button.active {
+    background-color: #D95F29;
+    color: #FFFFFF;
+}
+#sidebar-footer #auth-button {
+    background-color: #A24936; /* Accent 1 */
+    color: #FFFFFF;
+}
+#sidebar-footer #auth-button:hover {
+    background-color: #7c372a;
+}
+
+
+/* Chat Container */
+#chat-container {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    height: 100vh; /* Ensure it takes full viewport height */
+    background-color: #F0EBE3; /* Secondary - Light Warm Gray/Taupe */
+}
+
+#chat-header {
+    background-color: #FFFFFF;
+    padding: 10px 20px;
+    border-bottom: 1px solid #e0e0e0;
+    display: flex;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+#mobile-menu-button {
+    display: none; /* Hidden on desktop */
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    margin-right: 15px;
+    color: #2A2B2A;
+}
+#mobile-menu-button svg path {
+    fill: #2A2B2A;
+}
+
+
+#current-view-title {
+    font-size: 1.2em;
+    font-weight: 700;
+    color: #2A2B2A;
+    margin: 0;
+}
+
+#message-list-container {
+    flex-grow: 1;
+    padding: 20px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Basic Chat Message Styling (placeholders) */
+.chat-message {
+    padding: 10px 15px;
+    border-radius: 18px;
+    margin-bottom: 10px;
+    max-width: 70%;
+    line-height: 1.4;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+.user-message {
+    background-color: #D95F29; /* Primary - Deep Orange */
+    color: white;
+    align-self: flex-end;
+    border-bottom-right-radius: 4px;
+}
+
+.ai-message {
+    background-color: #FFFFFF; /* White for AI messages for contrast */
+    color: #2A2B2A; /* Text - Off-Black */
+    align-self: flex-start;
+    border-bottom-left-radius: 4px;
+}
+.ai-message .recipe-card { /* Ensure recipe cards in AI messages have a neutral bg */
+    background-color: #fdfaf6; /* Slightly off-white */
+    border: 1px solid #e0e0e0;
+}
+
+
+#chat-input-bar {
+    display: flex;
+    padding: 15px 20px;
+    background-color: #FFFFFF;
+    border-top: 1px solid #e0e0e0;
+    gap: 10px;
+    align-items: center;
+}
+
+#user-chat-input {
+    flex-grow: 1;
+    padding: 12px 15px;
+    border: 1px solid #ccc;
+    border-radius: 20px;
+    font-size: 1em;
+    outline: none;
+}
+#user-chat-input:focus {
+    border-color: #D95F29; /* Primary - Deep Orange */
+    box-shadow: 0 0 0 2px rgba(217, 95, 41, 0.2);
+}
+
+#send-chat-button, .chat-action-button {
+    padding: 10px 15px;
+    border: none;
+    border-radius: 20px;
+    background-color: #A24936; /* Accent 1 - Deep Red-Brown */
+    color: white;
+    font-size: 1em;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+#send-chat-button svg path {
+    fill: white;
+}
+
+#send-chat-button:hover, .chat-action-button:hover {
+    background-color: #7c372a; /* Darker Accent 1 */
+}
+
+.chat-action-button {
+    background-color: #F5C542; /* Accent 2 - Gold */
+    color: #2A2B2A; /* Text on gold */
+}
+.chat-action-button:hover {
+    background-color: #e0b03a; /* Darker Gold */
+}
+
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+    #sidebar {
+        position: absolute;
+        transform: translateX(-100%);
+        height: 100%; /* Full height for mobile overlay */
+        box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+    }
+
+    #sidebar.open {
+        transform: translateX(0);
+    }
+
+    #mobile-menu-button {
+        display: block;
+    }
+
+    #chat-container {
+        width: 100%; /* Take full width when sidebar is hidden/overlay */
+    }
+
+    .chat-message {
+        max-width: 85%;
+    }
+
+    #chat-input-bar {
+        flex-wrap: wrap; /* Allow buttons to wrap on small screens */
+    }
+    #user-chat-input {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+    .chat-action-button {
+        font-size: 0.9em;
+        padding: 8px 12px;
+    }
+}
+
+/* Recipe Card Adaptation within Chat Bubbles */
+.ai-message .recipe-card {
+    background-color: #fdfaf6; /* Slightly off-white - from previous rule, good */
+    border: 1px solid #e0e0e0; /* from previous rule, good */
+    box-shadow: none; /* Remove default card shadow when inside a bubble */
+    margin-top: 10px;
+    padding: 12px; /* Reduced padding */
+    max-width: 100%; /* Ensure it fits bubble */
+    border-radius: 10px; /* Consistent with bubble styling */
+}
+
+.ai-message .recipe-card .recipe-summary h3 {
+    font-size: 1.1em; /* Slightly smaller title */
+    margin-bottom: 6px;
+    padding-right: 30px; /* Space for like button */
+}
+
+.ai-message .recipe-card .recipe-summary p {
+    font-size: 0.85em; /* Smaller description */
+    line-height: 1.4;
+    margin-bottom: 10px;
+}
+
+.ai-message .recipe-card .sousie-extra-info {
+    padding: 10px; /* Reduced padding */
+    margin-top: 8px;
+    margin-bottom: 10px;
+    font-size: 0.8em; /* Smaller text in extra info */
+}
+.ai-message .recipe-card .sousie-extra-info h4 {
+    font-size: 1em; /* Relative to parent's 0.8em */
+    margin-bottom: 6px;
+}
+
+
+.ai-message .recipe-card .like-button {
+    top: 10px; /* Adjust position for reduced padding */
+    right: 10px;
+}
+.ai-message .recipe-card .like-button svg {
+    width: 20px; /* Slightly smaller like icon */
+    height: 20px;
+}
+
+.ai-message .recipe-card .expand-toggle {
+    padding: 6px 12px; /* Smaller toggle button */
+    font-size: 0.8em;
+}
+
+.ai-message .recipe-card .recipe-details {
+    margin-top: 12px; /* Reduced spacing */
+    padding-top: 12px;
+}
+
+.ai-message .recipe-card .recipe-details .recipe-component-title {
+    font-size: 1em; /* Smaller component titles */
+    margin-top: 10px;
+    margin-bottom: 6px;
+}
+.ai-message .recipe-card .recipe-details .recipe-component-title:first-child {
+    margin-top: 0;
+}
+
+
+.ai-message .recipe-card .recipe-details h5 {
+    font-size: 0.9em; /* Smaller ingredients/instructions titles */
+    margin-top: 8px;
+    margin-bottom: 5px;
+}
+
+.ai-message .recipe-card .recipe-details ul li,
+.ai-message .recipe-card .recipe-details ol li {
+    font-size: 0.85em; /* Smaller list item text */
+    margin-bottom: 4px;
+}
+
+
+/* Hide old elements that are not part of the new layout on index.html */
+/* These might be removed from HTML later, but good to hide for now */
+body > header, body > main, body > footer {
+    /* display: none !important; /* Use if elements are still in DOM outside #app-container.chat-layout */
+}
+
+/* Styling for elements moved to sidebar */
+#sidebar-footer #unit-toggle-buttons {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 10px;
+}
+
+#sidebar-footer #auth-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+#sidebar-footer #user-info {
+    font-size: 0.9em;
+    margin-bottom: 5px;
+    color: #2A2B2A;
+}
+#sidebar-footer #supabase-status-indicator {
+    font-size: 0.8em;
+    color: #A8A39D; /* Neutral */
+    text-align: center;
+    margin-top: 10px;
+}
+
+/* Ensure modals are still usable */
+.modal {
+    z-index: 1000; /* Make sure modals are on top of everything */
+}
+
+/* Additional styling for .control-button if they are reused in sidebar nav */
+#sidebar-nav .control-button.nav-link {
+    /* Styles from .nav-link are already applied */
+}
+
+/* Specificity for unit buttons in sidebar */
+#sidebar #unit-toggle-buttons .unit-button {
+    padding: 6px 10px;
+    font-size: 0.9em;
+    border-radius: 15px;
+}
+
+#sidebar #auth-button {
+    padding: 8px 12px;
+    border-radius: 18px;
+    width: 100%;
+    margin-top: 5px;
+}
+#sidebar #auth-button svg {
+    vertical-align: middle;
+    margin-right: 5px;
+}
+
+/* Refinement for chat input buttons */
+#chat-input-bar .chat-action-button {
+    margin-left: 5px; /* Add some space between action buttons */
+}
+#chat-input-bar #send-chat-button {
+    min-width: 50px; /* Ensure send button has some width for the icon */
+}

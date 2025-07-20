@@ -241,7 +241,7 @@ async function handleUserQuery(queryText: string, isSurprise: boolean = false) {
 
     try {
         const response: GenerateContentResponse = await ai.models.generateContent({
-            model: "gemini-2.5-flash-preview-04-17", contents: promptUserMessage,
+            model: "gemini-1.5-flash-latest", contents: promptUserMessage,
             config: { responseMimeType: "application/json", systemInstruction: SOUSIE_SYSTEM_INSTRUCTION, thinkingConfig: { thinkingBudget: 0 }, seed: seedForCurrentApiCall },
         });
         let rawText = (typeof response.text === 'string') ? response.text.trim() : "";

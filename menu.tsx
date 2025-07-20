@@ -189,7 +189,7 @@ async function handleGenerateGroceryListForPage() {
     let jsonStrToParse = "";
     try {
         const response: GenerateContentResponse = await ai.models.generateContent({
-            model: "gemini-2.5-flash-preview-04-17", contents: prompt,
+            model: "gemini-1.5-flash-latest", contents: prompt,
             config: { responseMimeType: "application/json", systemInstruction: SOUSIE_MENU_SYSTEM_INSTRUCTION, thinkingConfig: { thinkingBudget: 0 } },
         });
         let rawText = (typeof response.text === 'string') ? response.text.trim() : "";
@@ -221,7 +221,7 @@ async function handleGenerateWeeklyMenuForPage() {
     let jsonStrToParse = "";
     try {
         const response: GenerateContentResponse = await ai.models.generateContent({
-            model: "gemini-2.5-flash-preview-04-17", contents: prompt,
+            model: "gemini-1.5-flash-latest", contents: prompt,
             config: { responseMimeType: "application/json", systemInstruction: SOUSIE_MENU_SYSTEM_INSTRUCTION, thinkingConfig: { thinkingBudget: 0 } },
         });
         let rawText = (typeof response.text === 'string') ? response.text.trim() : "";

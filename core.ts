@@ -1,8 +1,7 @@
 /**
  * core.ts
- * Shared logic for the Sousie Multi-Page Application.
+ * Shared logic for the Sousie Single-Page Application.
  */
-import { GoogleGenAI, GenerateContentResponse } from "@google/genai";
 
 // --- Supabase Client (Globally available via CDN) ---
 // @ts-ignore
@@ -10,15 +9,12 @@ const { createClient, User } = supabase;
 export type SupabaseUser = InstanceType<typeof User>; // Export user type
 
 // --- Global Configuration & State ---
-export const API_KEY = process.env.API_KEY;
 export const SUPABASE_URL = process.env.SUPABASE_URL || 'https://ovnwftdzmuchbnmpmfev.supabase.co';
 export const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im92bndmdGR6bXVjaGJubXBtZmV2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk0NzAwODIsImV4cCI6MjA2NTA0NjA4Mn0.fGImUiJMLAHKFrnDVgw7X0nGOw3Dmm-xeAdb-GeVWJc';
 
 export let supabaseClient: any;
 export let currentUser: SupabaseUser | null = null;
 export let currentUnitSystem: 'us' | 'metric' = 'us';
-
-export const ai = API_KEY ? new GoogleGenAI({ apiKey: API_KEY }) : null;
 
 // --- DOM Element References (Common across pages) ---
 // These will be populated by an init function called on each page
@@ -644,12 +640,7 @@ export function initializeGlobalFunctionality() {
         // Event listeners will be set up by specific page scripts if they need to react to unit changes
     }
 
-     if (!API_KEY) {
-        console.error("API_KEY not found. AI-dependent features will be disabled globally.");
-        // Disable AI-dependent nav links if API_KEY is missing
-        const menuLink = document.getElementById('menu-planner-link') as HTMLAnchorElement | null;
-        if (menuLink) { menuLink.style.pointerEvents = 'none'; menuLink.style.opacity = '0.6'; }
-    }
+    // Note: OpenAI API key is now handled in the main app file
     if (!supabaseReady) { // If Supabase client failed to initialize
         const favoritesLink = document.getElementById('favorites-link') as HTMLAnchorElement | null;
         const menuLink = document.getElementById('menu-planner-link') as HTMLAnchorElement | null;

@@ -208,15 +208,256 @@ header h1 a { /* Style for the link within H1 */
 main {
     flex-grow: 1;
     display: flex;
-    flex-direction: column;
     overflow: hidden;
     background-color: var(--sousie-light-cream);
 }
 
+/* Sidebar Navigation */
+#sidebar {
+    width: 250px;
+    background-color: var(--sousie-navy);
+    flex-shrink: 0;
+    border-right: 1px solid #E0DACC;
+}
 
-#results-container, /* For index.html */
-#menu-planner-view-content, /* For menu.html */
-#favorites-view-content { /* For favorites.html */
+#sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    padding: 20px 0;
+}
+
+.nav-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 15px 25px;
+    background: none;
+    border: none;
+    color: var(--sousie-text-on-dark);
+    font-size: 0.95em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s;
+    text-align: left;
+    width: 100%;
+}
+
+.nav-item:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.nav-item.active {
+    background-color: var(--sousie-orange);
+    color: var(--sousie-text-on-dark);
+}
+
+.nav-item i {
+    width: 18px;
+    text-align: center;
+}
+
+/* Content Area */
+#content-area {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+}
+
+.view-content {
+    display: none;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+}
+
+.view-content.active {
+    display: flex;
+}
+
+/* Chat Interface */
+#chat-view {
+    display: flex;
+    flex-direction: column;
+}
+
+#chat-header {
+    padding: 25px;
+    border-bottom: 1px solid #E0DACC;
+    background-color: var(--sousie-cream);
+}
+
+#chat-header h2 {
+    color: var(--sousie-navy);
+    font-size: 1.5em;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+#chat-header p {
+    color: var(--sousie-text-on-light);
+    font-size: 0.95em;
+    margin: 0;
+}
+
+#chat-messages {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 20px 25px;
+    background-color: var(--sousie-light-cream);
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.chat-message {
+    max-width: 80%;
+    padding: 12px 16px;
+    border-radius: 18px;
+    font-size: 0.95em;
+    line-height: 1.4;
+}
+
+.chat-message.user {
+    background-color: var(--sousie-orange);
+    color: var(--sousie-text-on-dark);
+    align-self: flex-end;
+    margin-left: auto;
+}
+
+.chat-message.sousie {
+    background-color: var(--sousie-cream);
+    color: var(--sousie-text-on-light);
+    align-self: flex-start;
+    border: 1px solid #E0DACC;
+}
+
+.chat-message.sousie .message-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: var(--sousie-orange);
+}
+
+.chat-message.sousie .message-header .chef-hat-icon-title {
+    width: 20px;
+    height: 20px;
+    fill: var(--sousie-orange);
+}
+
+#chat-input-area {
+    padding: 20px 25px;
+    background-color: var(--sousie-cream);
+    border-top: 1px solid #E0DACC;
+}
+
+#chat-input-container {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+#chat-input {
+    flex-grow: 1;
+    padding: 12px 18px;
+    border: 1px solid #D0C9BF;
+    border-radius: 25px;
+    font-size: 0.95em;
+    background-color: #fff;
+    color: var(--sousie-text-on-light);
+}
+
+#chat-input:focus {
+    outline: none;
+    border-color: var(--sousie-orange);
+    box-shadow: 0 0 0 0.2rem rgba(255, 122, 47, 0.25);
+}
+
+#chat-send-button {
+    width: 45px;
+    height: 45px;
+    background-color: var(--sousie-orange);
+    color: var(--sousie-text-on-dark);
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s;
+}
+
+#chat-send-button:hover {
+    background-color: #E66A20;
+}
+
+#suggested-questions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.suggestion-btn {
+    background-color: transparent;
+    color: var(--sousie-orange);
+    border: 1px solid var(--sousie-orange);
+    padding: 8px 15px;
+    border-radius: 20px;
+    font-size: 0.85em;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.suggestion-btn:hover {
+    background-color: var(--sousie-orange);
+    color: var(--sousie-text-on-dark);
+}
+
+/* Recipe Finder */
+#recipe-finder-header {
+    padding: 25px;
+    border-bottom: 1px solid #E0DACC;
+    background-color: var(--sousie-cream);
+}
+
+#recipe-finder-header h2 {
+    color: var(--sousie-navy);
+    font-size: 1.5em;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+#recipe-finder-header p {
+    color: var(--sousie-text-on-light);
+    font-size: 0.95em;
+    margin: 0;
+}
+
+#recipe-input-area {
+    padding: 25px;
+    background-color: var(--sousie-cream);
+    border-bottom: 1px solid #E0DACC;
+}
+
+.input-group {
+    margin-bottom: 20px;
+}
+
+.input-group label {
+    display: block;
+    font-size: 0.9em;
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: var(--sousie-text-on-light);
+}
+
+
+#results-container,
+#menu-planner-view-content,
+#favorites-view-content {
     flex-grow: 1;
     overflow-y: auto;
     display: flex;
@@ -225,6 +466,7 @@ main {
     gap: 20px;
     padding: 25px;
     position: relative;
+    background-color: var(--sousie-light-cream);
 }
 
 
@@ -1048,7 +1290,7 @@ header .nav-link.control-button.active:disabled {
         width: 28px;
         height: 28px;
     }
-    #main-nav { /* Updated from #controls-area */
+    #main-nav {
         gap: 10px;
     }
     #auth-section {
@@ -1057,7 +1299,7 @@ header .nav-link.control-button.active:disabled {
     #user-info {
         max-width: 100px;
     }
-    .unit-button, .nav-link.control-button { /* Updated for nav links */
+    .unit-button, .nav-link.control-button {
         padding: 6px 10px;
         font-size: 0.8em;
     }
@@ -1071,6 +1313,36 @@ header .nav-link.control-button.active:disabled {
 
     #action-buttons-wrapper button {
         min-width: calc(50% - 5px);
+    }
+    
+    /* Mobile sidebar adjustments */
+    main {
+        flex-direction: column;
+    }
+    
+    #sidebar {
+        width: 100%;
+        height: auto;
+    }
+    
+    #sidebar-nav {
+        flex-direction: row;
+        padding: 10px 0;
+        overflow-x: auto;
+    }
+    
+    .nav-item {
+        flex-shrink: 0;
+        padding: 10px 15px;
+        white-space: nowrap;
+    }
+    
+    .nav-item span {
+        display: none;
+    }
+    
+    .nav-item i {
+        margin-right: 0;
     }
 }
 

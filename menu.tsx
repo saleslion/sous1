@@ -1,14 +1,12 @@
 /**
  * menu.tsx - Script for menu.html (Menu Planner)
  */
-import { GoogleGenAI, GenerateContentResponse } from "@google/genai";
 import {
-    API_KEY, ai, /* SOUSIE_MENU_SYSTEM_INSTRUCTION, */ // Removed from import
-    currentUser, currentUnitSystem, supabaseClient, // Added supabaseClient
+    currentUser, currentUnitSystem, supabaseClient,
     initializeGlobalFunctionality,
-    sanitizeHTML, /* createDayCard, */ panSVG, // Removed createDayCard from import
+    sanitizeHTML, panSVG,
     updateUnitSystem,
-    WeeklyMenu, DayMeal, GroceryListCategory, UserMenuSummary, Recipe // Import types
+    WeeklyMenu, DayMeal, GroceryListCategory, UserMenuSummary, Recipe
 } from "./core";
 
 // DOM Elements specific to this page

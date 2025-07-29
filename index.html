@@ -5,50 +5,204 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Sousie - AI Cooking Assistant</title>
     <script type="module" src="/index.tsx"></script>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="index.css">
   </head>
-  <body class="bg-gray-50 text-gray-900 font-sans min-h-screen flex flex-col">
-
-    <header class="bg-white shadow sticky top-0 z-10">
-      <div class="max-w-5xl mx-auto px-4 py-4 flex justify-between items-center">
-        <h1 class="text-2xl font-bold text-blue-600">Sousie</h1>
-        <nav class="space-x-4 text-sm">
-          <a href="#" class="hover:text-blue-500 text-gray-700">Home</a>
-          <a href="#" class="hover:text-blue-500 text-gray-700">Favorites</a>
-          <a href="#" class="hover:text-blue-500 text-gray-700">About</a>
+  <body>
+    <div id="app-container">
+      <header>
+        <h1><a href="#" class="home-link"><svg class="chef-hat-icon-title" viewBox="0 0 262 262" xmlns="http://www.w3.org/2000/svg"><g fill-rule="evenodd"><path d="M151.552 143.4l91.208-91.207a10.97 10.97 0 0 0 0-15.514L227.246 21.16a10.97 10.97 0 0 0-15.514 0L120.52 112.37l25.842 25.842 5.19 5.189z" fill="#273347"/><path d="M131.623 241.667c61.662 0 111.66-49.998 111.66-111.66 0-61.662-49.998-111.66-111.66-111.66-61.662 0-111.66 49.998-111.66 111.66 0 61.662 49.998 111.66 111.66 111.66zm0-15.514c-53.076 0-96.146-43.07-96.146-96.146s43.07-96.146 96.146-96.146 96.146 43.07 96.146 96.146-43.07 96.146-96.146 96.146z" fill="#FF7A2F"/></g></svg>Sousie</a></h1>
+        <nav id="main-nav">
+          <span id="supabase-status-indicator" class="status-warning">DB Not Configured</span>
+          <div id="unit-toggle-buttons">
+            <button id="us-units-button" class="unit-button active" aria-pressed="true">US</button>
+            <button id="metric-units-button" class="unit-button" aria-pressed="false">Metric</button>
+          </div>
+          <div id="auth-section">
+            <span id="user-info"></span>
+            <button id="auth-button">
+              <svg xmlns="http://www.w3.org/2000/svg" height="16px" viewBox="0 -960 960 960" width="16px"><path d="M480-120v-80h280v-560H480v-80h280q33 0 56.5 23.5T840-760v560q0 33-23.5 56.5T760-120H480Zm-80-160l-55-58 102-102H120v-80h327L345-622l55-58 200 200-200 200Z"/></svg>
+              <span id="auth-button-text">Login</span>
+            </button>
+          </div>
         </nav>
+      </header>
+
+      <main>
+        <!-- Sidebar Navigation -->
+        <div id="sidebar">
+          <nav id="sidebar-nav">
+            <button class="nav-item active" data-view="chat">
+              <i class="fas fa-comments"></i>
+              <span>Chat</span>
+            </button>
+            <button class="nav-item" data-view="recipes">
+              <i class="fas fa-utensils"></i>
+              <span>Recipe Finder</span>
+            </button>
+            <button class="nav-item" data-view="menu">
+              <i class="fas fa-calendar-alt"></i>
+              <span>Menu Planner</span>
+            </button>
+            <button class="nav-item" data-view="favorites">
+              <i class="fas fa-heart"></i>
+              <span>Favorites</span>
+            </button>
+          </nav>
+        </div>
+
+        <!-- Main Content Area -->
+        <div id="content-area">
+          <!-- Chat Interface -->
+          <div id="chat-view" class="view-content active">
+            <div id="chat-header">
+              <h2>Chat with Sousie</h2>
+              <p>Ask me anything about cooking, recipes, or food!</p>
+            </div>
+            <div id="chat-messages"></div>
+            <div id="chat-input-area">
+              <div id="chat-input-container">
+                <input type="text" id="chat-input" placeholder="Ask Sousie about cooking, recipes, ingredients..." />
+                <button id="chat-send-button">
+                  <i class="fas fa-paper-plane"></i>
+                </button>
+              </div>
+              <div id="suggested-questions">
+                <button class="suggestion-btn">What can I make with chicken?</button>
+                <button class="suggestion-btn">How do I cook rice perfectly?</button>
+                <button class="suggestion-btn">What's a good vegetarian meal?</button>
+                <button class="suggestion-btn">Help me plan a dinner party</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recipe Finder -->
+          <div id="recipes-view" class="view-content">
+            <div id="recipe-finder-header">
+              <h2>Recipe Finder</h2>
+              <p>Tell me what ingredients you have, and I'll suggest delicious recipes!</p>
+            </div>
+            <div id="recipe-input-area">
+              <div class="input-group">
+                <label for="ingredients-input">Ingredients</label>
+                <input id="ingredients-input" type="text" placeholder="e.g., chicken, potatoes, onions" />
+              </div>
+              <div class="input-group">
+                <label for="dietary-input">Dietary Preferences</label>
+                <input id="dietary-input" type="text" placeholder="e.g., vegetarian, gluten-free" />
+              </div>
+              <div id="action-buttons-wrapper">
+                <button id="suggest-button">Find Recipes</button>
+                <button id="surprise-button">Surprise Me</button>
+                <button id="start-over-button">Start Over</button>
+              </div>
+            </div>
+            <div id="results-container"></div>
+          </div>
+
+          <!-- Menu Planner -->
+          <div id="menu-view" class="view-content">
+            <div id="menu-planner-header-controls">
+              <h2>Weekly Menu Planner</h2>
+            </div>
+            <div id="menu-planner-view-content">
+              <div id="menu-planner-controls">
+                <button id="generate-weekly-menu-button">Generate Weekly Menu</button>
+                <select id="dietary-restrictions-menu-select">
+                  <option value="">No dietary restrictions</option>
+                  <option value="vegetarian">Vegetarian</option>
+                  <option value="vegan">Vegan</option>
+                  <option value="gluten-free">Gluten-free</option>
+                  <option value="dairy-free">Dairy-free</option>
+                  <option value="low-carb">Low-carb</option>
+                </select>
+                <button id="save-current-menu-button">Save Current Menu</button>
+                <select id="saved-menus-dropdown" style="display: none;">
+                  <option value="">Load Saved Menu...</option>
+                </select>
+              </div>
+              <div id="menu-planner-messages"></div>
+              <div id="weekly-menu-display"></div>
+              <div id="grocery-list-display"></div>
+            </div>
+          </div>
+
+          <!-- Favorites -->
+          <div id="favorites-view" class="view-content">
+            <div id="favorites-header-controls">
+              <h2>Your Favorite Recipes</h2>
+            </div>
+            <div id="favorites-view-content">
+              <div id="favorites-messages"></div>
+              <div id="favorite-recipes-display"></div>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <footer>
+        <div id="input-area" style="display: none;"></div>
+        © 2025 Sousie. Your AI cooking companion.
+      </footer>
+    </div>
+
+    <!-- Auth Modals -->
+    <div id="login-modal" class="modal" aria-hidden="true">
+      <div class="modal-overlay"></div>
+      <div class="modal-container">
+        <div class="modal-header">
+          <h3 class="modal-title">Welcome Back to Sousie!</h3>
+          <button class="modal-close" aria-label="Close">&times;</button>
+        </div>
+        <div class="modal-content">
+          <div id="login-message" class="modal-message"></div>
+          <form id="login-form">
+            <div class="form-group">
+              <label for="login-email">Email</label>
+              <input type="email" id="login-email" required />
+            </div>
+            <div class="form-group">
+              <label for="login-password">Password</label>
+              <input type="password" id="login-password" required />
+            </div>
+            <button type="submit" id="login-submit-button" class="modal-button">Login</button>
+          </form>
+        </div>
+        <div class="modal-footer">
+          Don't have an account? <button id="go-to-signup" class="link-button">Sign up here</button>
+        </div>
       </div>
-    </header>
+    </div>
 
-    <main class="flex-grow px-4 py-6 max-w-5xl mx-auto space-y-6">
-      <section class="bg-white p-6 rounded shadow">
-        <h2 class="text-xl font-semibold mb-4">What's in your kitchen?</h2>
-
-        <div class="mb-4">
-          <label for="ingredients-input" class="block text-sm font-medium text-gray-700 mb-1">Ingredients</label>
-          <input id="ingredients-input" type="text" placeholder="e.g., chicken, potatoes"
-            class="w-full border rounded px-3 py-2" />
+    <div id="signup-modal" class="modal" aria-hidden="true">
+      <div class="modal-overlay"></div>
+      <div class="modal-container">
+        <div class="modal-header">
+          <h3 class="modal-title">Join Sousie's Kitchen!</h3>
+          <button class="modal-close" aria-label="Close">&times;</button>
         </div>
-
-        <div class="mb-4">
-          <label for="dietary-input" class="block text-sm font-medium text-gray-700 mb-1">Dietary Preferences</label>
-          <input id="dietary-input" type="text" placeholder="e.g., gluten-free"
-            class="w-full border rounded px-3 py-2" />
+        <div class="modal-content">
+          <div id="signup-message" class="modal-message"></div>
+          <form id="signup-form">
+            <div class="form-group">
+              <label for="signup-email">Email</label>
+              <input type="email" id="signup-email" required />
+              <small>We'll never share your email with anyone else.</small>
+            </div>
+            <div class="form-group">
+              <label for="signup-password">Password</label>
+              <input type="password" id="signup-password" required minlength="6" />
+              <small>Minimum 6 characters.</small>
+            </div>
+            <button type="submit" id="signup-submit-button" class="modal-button">Sign Up</button>
+          </form>
         </div>
-
-        <div class="flex gap-4 flex-wrap">
-          <button id="suggest-button" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Suggest</button>
-          <button id="surprise-button" class="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600">Surprise Me</button>
-          <button id="start-over-button" class="bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400">Start Over</button>
+        <div class="modal-footer">
+          Already have an account? <button id="go-to-login" class="link-button">Login here</button>
         </div>
-      </section>
-
-      <section id="results-container" class="space-y-4"></section>
-    </main>
-
-    <footer class="bg-white text-center py-4 text-sm border-t text-gray-500">
-      © 2025 Sousie. AI-powered cooking inspiration.
-    </footer>
-
+      </div>
+    </div>
   </body>
 </html>

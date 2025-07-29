@@ -2,11 +2,11 @@
  * favorites.tsx - Script for favorites.html (My Favorites)
  */
 import {
-    API_KEY, currentUser, currentUnitSystem, supabaseClient, // Added supabaseClient
+    currentUser, currentUnitSystem, supabaseClient,
     initializeGlobalFunctionality,
     sanitizeHTML, createExpandableRecipeCard, panSVG,
     updateUnitSystem, handleUnlikeRecipe,
-    LikedRecipeFromDB, Recipe // Import types
+    LikedRecipeFromDB, Recipe
 } from "./core";
 
 // DOM Elements specific to this page

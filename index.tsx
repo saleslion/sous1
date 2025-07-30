@@ -89,7 +89,7 @@ function initializeDOMReferences() {
     
     // Navigation elements
     navItems = document.querySelectorAll('.nav-item');
-    viewContents = document.querySelectorAll('.view-content');
+    viewContents = document.querySelectorAll('.view');
 }
 
 function setRecipeSuggestionsLoading(loading: boolean, ingredientsForLoadingMessage?: string) {
@@ -474,11 +474,35 @@ function isRecipeRequest(message: string): boolean {
     const recipeKeywords = [
         'recipe', 'recipes', 'cook', 'cooking', 'make', 'prepare', 'dish', 'meal',
         'ingredient', 'ingredients', 'how to make', 'how do i cook', 'what can i make',
-        'dinner', 'lunch', 'breakfast', 'dessert', 'appetizer', 'snack'
+        'dinner', 'lunch', 'breakfast', 'dessert', 'appetizer', 'snack',
+        'suggestions', 'suggest', 'recommend', 'ideas', 'what should i',
+        'give me', 'show me', 'find me', 'help me', 'i want to eat',
+        'i have', 'with these ingredients', 'using'
+    ];
+    
+    // Common food ingredients that often indicate recipe requests
+    const foodKeywords = [
+        'chicken', 'beef', 'pork', 'fish', 'salmon', 'steak', 'ribeye', 'sirloin',
+        'potatoes', 'rice', 'pasta', 'noodles', 'vegetables', 'onions', 'garlic',
+        'tomatoes', 'cheese', 'eggs', 'flour', 'butter', 'oil', 'spices'
     ];
     
     const lowerMessage = message.toLowerCase();
-    return recipeKeywords.some(keyword => lowerMessage.includes(keyword));
+    
+    // Check for explicit recipe keywords
+    const hasRecipeKeyword = recipeKeywords.some(keyword => lowerMessage.includes(keyword));
+    
+    // Check if message contains food ingredients (possible recipe request)
+    const hasFoodKeyword = foodKeywords.some(keyword => lowerMessage.includes(keyword));
+    
+    // Context-aware detection: if previous message was about ingredients, current message might be asking for recipes
+    const contextualPhrases = ['and', 'with', 'plus', 'also', 'what about', 'how about'];
+    const hasContextualPhrase = contextualPhrases.some(phrase => lowerMessage.includes(phrase));
+    
+    // If message has food keywords and is short (likely ingredient list), treat as recipe request
+    const isShortFoodMessage = hasFoodKeyword && message.split(' ').length <= 10;
+    
+    return hasRecipeKeyword || isShortFoodMessage || (hasFoodKeyword && hasContextualPhrase);
 }
 
 async function handleChatMessage(userMessage: string) {

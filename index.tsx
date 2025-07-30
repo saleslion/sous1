@@ -70,6 +70,9 @@ Topics you excel at:
 
 Always be helpful, encouraging, and ready to dive deeper into any cooking topic!`;
 
+// Separate system instruction for recipe generation (structured JSON responses)
+const RECIPE_GENERATION_INSTRUCTION = "You are a cooking assistant that provides structured recipe data in JSON format. Always respond with valid JSON only, no additional text or explanations. Create detailed recipes with specific measurements and clear instructions.";
+
 
 function initializeDOMReferences() {
     resultsContainer = document.getElementById('results-container') as HTMLDivElement;
@@ -238,11 +241,11 @@ async function handleSuggestRecipes(ingredientsQuery?: string) {
 
     try {
         const messages = [
-            { role: 'system', content: SOUSIE_SYSTEM_INSTRUCTION },
+            { role: 'system', content: RECIPE_GENERATION_INSTRUCTION },
             { role: 'user', content: promptUserMessage }
         ];
         
-        const response = await callOpenAI(messages, 0.7);
+        const response = await callOpenAI(messages, 0.3); // Lower temperature for consistent JSON
         let jsonStrToParse = response.trim();
         
         // Clean up response if it's wrapped in code blocks
@@ -311,11 +314,11 @@ async function handleSurpriseMe() {
 
     try {
         const messages = [
-            { role: 'system', content: SOUSIE_SYSTEM_INSTRUCTION },
+            { role: 'system', content: RECIPE_GENERATION_INSTRUCTION },
             { role: 'user', content: promptUserMessage }
         ];
         
-        const response = await callOpenAI(messages, 0.9); // Higher temperature for more creative surprises
+        const response = await callOpenAI(messages, 0.5); // Moderate temperature for creative but structured JSON
         let jsonStrToParse = response.trim();
         
         // Clean up response if it's wrapped in code blocks

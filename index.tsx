@@ -26,7 +26,6 @@ let chatMessages: HTMLDivElement | null;
 let chatInput: HTMLInputElement | null;
 let chatSendButton: HTMLButtonElement | null;
 let clearChatButton: HTMLButtonElement | null;
-let suggestedQuestions: HTMLDivElement | null;
 
 // Navigation Elements
 let navItems: NodeListOf<HTMLButtonElement> | null;
@@ -87,7 +86,6 @@ function initializeDOMReferences() {
     chatInput = document.getElementById('chat-input') as HTMLInputElement;
     chatSendButton = document.getElementById('chat-send-button') as HTMLButtonElement;
     clearChatButton = document.getElementById('clear-chat-button') as HTMLButtonElement;
-    suggestedQuestions = document.getElementById('suggested-questions') as HTMLDivElement;
     
     // Navigation elements
     navItems = document.querySelectorAll('.nav-item');
@@ -471,6 +469,18 @@ function addChatMessage(sender: 'user' | 'sousie', message: string) {
     chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
+// Helper function to detect if user is asking for recipes
+function isRecipeRequest(message: string): boolean {
+    const recipeKeywords = [
+        'recipe', 'recipes', 'cook', 'cooking', 'make', 'prepare', 'dish', 'meal',
+        'ingredient', 'ingredients', 'how to make', 'how do i cook', 'what can i make',
+        'dinner', 'lunch', 'breakfast', 'dessert', 'appetizer', 'snack'
+    ];
+    
+    const lowerMessage = message.toLowerCase();
+    return recipeKeywords.some(keyword => lowerMessage.includes(keyword));
+}
+
 async function handleChatMessage(userMessage: string) {
     console.log("💬 DEBUG: handleChatMessage called with:", userMessage);
     if (!userMessage.trim() || !OPENAI_API_KEY) return;
@@ -486,8 +496,16 @@ async function handleChatMessage(userMessage: string) {
     // Add user message to UI
     addChatMessage('user', userMessage);
     
+    // Check if this is a recipe request
+    const isRecipeReq = isRecipeRequest(userMessage);
+    
     // Add loading indicator with more dynamic text
-    const loadingTexts = [
+    const loadingTexts = isRecipeReq ? [
+        "Let me find some delicious recipes for you... 🍳",
+        "Searching my recipe collection... 📖",
+        "Cooking up some recipe cards... 👨‍🍳",
+        "Gathering recipe ideas... ✨"
+    ] : [
         "Let me think about that... 🤔",
         "Cooking up a response... 👨‍🍳",
         "Checking my recipe book... 📖",
@@ -508,13 +526,98 @@ async function handleChatMessage(userMessage: string) {
     chatMessages!.scrollTop = chatMessages!.scrollHeight;
     
     try {
-        // Build messages with conversation context
+        let response: string;
+        
+        if (isRecipeReq) {
+            // Generate structured recipe cards for recipe requests
+            const unitInstructions = currentUnitSystem === 'us'
+                ? "US Customary units (e.g., cups, oz, lbs, tsp, tbsp)"
+                : "Metric units (e.g., ml, grams, kg, L)";
+            const recipeObjectJsonFormat = `"name": "Recipe Name", "description": "Desc.", "anecdote": "Story.", "chefTip": "Tip.", "ingredients": ["1 cup flour"], "instructions": ["Preheat."]`;
+            
+            const promptUserMessage = `Based on this request: "${userMessage}", suggest 3 distinct "mealPairings". Each MUST include: "mainRecipe" object and "sideRecipe" object (could be traditional side or dessert). Use ${unitInstructions}. Both "mainRecipe" and "sideRecipe" objects MUST contain: ${recipeObjectJsonFormat}. All fields are mandatory and non-empty. 'ingredients' and 'instructions' arrays MUST NOT be empty. Final JSON structure: {"mealPairings": [{"mealTitle": "Opt. Title", "mainRecipe": {...}, "sideRecipe": {...}}, ...3 pairings]}. RESPOND ONLY WITH VALID JSON. NO OTHER TEXT.`;
+            
+            const messages = [
+                { role: 'system', content: RECIPE_GENERATION_INSTRUCTION },
+                { role: 'user', content: promptUserMessage }
+            ];
+            
+            response = await callOpenAI(messages, 0.3); // Lower temperature for consistent JSON
+            
+            // Clean up response if it's wrapped in code blocks
+            let jsonStrToParse = response.trim();
+            const match = jsonStrToParse.match(/^```(?:json)?\s*\n?(.*?)\n?\s*```$/s);
+            if (match && match[1]) {
+                jsonStrToParse = match[1].trim();
+            }
+            
+            try {
+                const recipeData = JSON.parse(jsonStrToParse);
+                console.log("🔧 DEBUG: Recipe data parsed:", recipeData);
+                
+                // Remove loading indicator
+                loadingEl.remove();
+                
+                // Add recipe cards to chat
+                const messageEl = document.createElement('div');
+                messageEl.className = 'chat-message sousie';
+                messageEl.innerHTML = `
+                    <div class="message-header">
+                        ${panSVG}
+                        <span>Sousie</span>
+                    </div>
+                    <div class="message-content">
+                        <p>Here are some delicious recipe ideas for you! 🍳</p>
+                        <div class="recipes-grid">
+                        </div>
+                    </div>
+                `;
+                
+                const recipesGrid = messageEl.querySelector('.recipes-grid');
+                if (recipesGrid && recipeData.mealPairings && Array.isArray(recipeData.mealPairings)) {
+                    recipeData.mealPairings.forEach((mealPairing: any, index: number) => {
+                        if (mealPairing && mealPairing.mainRecipe) {
+                            recipesGrid.appendChild(createExpandableRecipeCard(mealPairing, `chat-${index}`, false));
+                        }
+                    });
+                }
+                
+                chatMessages?.appendChild(messageEl);
+                chatMessages!.scrollTop = chatMessages!.scrollHeight;
+                
+                // Add response to conversation history as descriptive text
+                const descriptiveResponse = `I found some great recipes for you! Here are ${recipeData.mealPairings?.length || 0} meal pairing suggestions.`;
+                conversationHistory.push({ role: 'assistant', content: descriptiveResponse });
+                
+                // Track successful recipe request
+                await trackUserIntent({
+                    intent_type: 'recipe_search',
+                    intent_data: { 
+                        message_length: userMessage.length,
+                        results_count: recipeData.mealPairings?.length || 0,
+                        unit_system: currentUnitSystem,
+                        search_type: 'chat_recipe_request',
+                        timestamp: new Date().toISOString()
+                    },
+                    user_input: userMessage,
+                    success: true
+                });
+                
+                return; // Exit early for recipe requests
+                
+            } catch (parseError) {
+                console.error("Failed to parse recipe JSON, falling back to conversational:", parseError);
+                // Fall back to conversational response if JSON parsing fails
+            }
+        }
+        
+        // Regular conversational response
         const messages = [
             { role: 'system', content: SOUSIE_SYSTEM_INSTRUCTION },
             ...conversationHistory
         ];
         
-        const response = await callOpenAI(messages, 0.8); // Higher temperature for more creative responses
+        response = await callOpenAI(messages, 0.8); // Higher temperature for more creative responses
         
         // Add assistant response to conversation history
         conversationHistory.push({ role: 'assistant', content: response });
@@ -684,19 +787,15 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     // Suggested questions event listeners
-    if (suggestedQuestions) {
-        const suggestionBtns = suggestedQuestions.querySelectorAll('.suggestion-btn');
-        suggestionBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
-                const question = btn.textContent;
-                if (question && chatInput) {
-                    chatInput.value = question;
-                    handleChatMessage(question);
-                    chatInput.value = '';
-                }
-            });
-        });
-    }
+    document.addEventListener('click', (e) => {
+        const target = e.target as HTMLElement;
+        if (target.classList.contains('suggestion')) {
+            const question = target.getAttribute('data-question') || target.textContent;
+            if (question && chatInput) {
+                handleChatMessage(question);
+            }
+        }
+    });
 
     // Unit change event listeners
     const coreUsUnitsButton = document.getElementById('us-units-button') as HTMLButtonElement | null;

@@ -25,6 +25,7 @@ let startOverButton: HTMLButtonElement | null;
 let chatMessages: HTMLDivElement | null;
 let chatInput: HTMLInputElement | null;
 let chatSendButton: HTMLButtonElement | null;
+let clearChatButton: HTMLButtonElement | null;
 let suggestedQuestions: HTMLDivElement | null;
 
 // Navigation Elements
@@ -39,8 +40,35 @@ let lastFetchWasSurprise: boolean = false;
 let isUnitUpdatingRecipes: boolean = false;
 let lastSuccessfulFetchSeed: number | null = null;
 
+// Chat conversation context
+let conversationHistory: Array<{role: string, content: string}> = [];
+
 // Sousie system instruction
-const SOUSIE_SYSTEM_INSTRUCTION = "You are Sousie, a friendly and creative AI cooking assistant. You help people with cooking, recipes, meal planning, ingredient substitutions, cooking techniques, and food-related questions. Be encouraging, helpful, and slightly whimsical in your responses. Always provide practical and actionable advice. When suggesting recipes, be specific about ingredients and instructions. You can also help with meal planning, dietary restrictions, and cooking tips.";
+const SOUSIE_SYSTEM_INSTRUCTION = `You are Sousie, a friendly and creative AI cooking assistant with a warm, conversational personality. You're like a knowledgeable friend who loves to cook and share culinary wisdom.
+
+Key traits:
+- Be conversational and engaging, like you're chatting with a friend in the kitchen
+- Ask follow-up questions to better understand what the user needs
+- Share cooking tips, tricks, and personal anecdotes about recipes
+- Be encouraging and enthusiastic about cooking adventures
+- Remember the conversation context and refer back to previous messages
+- Use emojis occasionally to add warmth (🍳👨‍🍳🥄✨)
+- Be specific with recipes and techniques, but explain things in an approachable way
+- Suggest variations and substitutions based on preferences or dietary needs
+- Share the "why" behind cooking techniques, not just the "how"
+
+Topics you excel at:
+- Recipe suggestions and modifications
+- Cooking techniques and troubleshooting
+- Ingredient substitutions and alternatives
+- Meal planning and prep strategies
+- Kitchen equipment recommendations
+- Food safety and storage tips
+- Dietary accommodations (vegan, gluten-free, etc.)
+- Flavor pairing and seasoning advice
+- Cooking for different occasions and group sizes
+
+Always be helpful, encouraging, and ready to dive deeper into any cooking topic!`;
 
 
 function initializeDOMReferences() {
@@ -55,6 +83,7 @@ function initializeDOMReferences() {
     chatMessages = document.getElementById('chat-messages') as HTMLDivElement;
     chatInput = document.getElementById('chat-input') as HTMLInputElement;
     chatSendButton = document.getElementById('chat-send-button') as HTMLButtonElement;
+    clearChatButton = document.getElementById('clear-chat-button') as HTMLButtonElement;
     suggestedQuestions = document.getElementById('suggested-questions') as HTMLDivElement;
     
     // Navigation elements
@@ -389,9 +418,27 @@ function initializeChat() {
         chatMessages = document.getElementById('chat-messages') as HTMLDivElement;
     }
     
-    // Initialize chat with welcome message
-    if (chatMessages && chatMessages.children.length === 0) {
-        addChatMessage('sousie', 'Hello! I\'m Sousie, your AI cooking assistant! 🍳 Ask me anything about cooking, recipes, or food. How can I help you today?');
+    // Clear any existing welcome screen and initialize with conversational message
+    if (chatMessages) {
+        // Remove welcome screen if it exists
+        const welcomeScreen = chatMessages.querySelector('.welcome-screen');
+        if (welcomeScreen) {
+            welcomeScreen.remove();
+        }
+        
+        // Add initial message if chat is empty
+        if (chatMessages.children.length === 0) {
+            const welcomeMessages = [
+                "Hey there! 👋 I'm Sousie, your friendly AI cooking companion! What delicious adventure are we embarking on today?",
+                "Hello! 🍳 I'm Sousie, and I'm absolutely thrilled to help you with all things cooking! What's on your culinary mind?",
+                "Hi! ✨ Sousie here, ready to dive into the wonderful world of cooking with you! What can I help you whip up today?"
+            ];
+            const welcomeMsg = welcomeMessages[Math.floor(Math.random() * welcomeMessages.length)];
+            addChatMessage('sousie', welcomeMsg);
+            
+            // Add conversation starter to history
+            conversationHistory.push({ role: 'assistant', content: welcomeMsg });
+        }
     }
 }
 
@@ -420,10 +467,26 @@ function addChatMessage(sender: 'user' | 'sousie', message: string) {
 async function handleChatMessage(userMessage: string) {
     if (!userMessage.trim() || !OPENAI_API_KEY) return;
     
-    // Add user message
+    // Add user message to conversation history
+    conversationHistory.push({ role: 'user', content: userMessage });
+    
+    // Keep conversation history manageable (last 10 exchanges = 20 messages)
+    if (conversationHistory.length > 20) {
+        conversationHistory = conversationHistory.slice(-20);
+    }
+    
+    // Add user message to UI
     addChatMessage('user', userMessage);
     
-    // Add loading indicator
+    // Add loading indicator with more dynamic text
+    const loadingTexts = [
+        "Let me think about that... 🤔",
+        "Cooking up a response... 👨‍🍳",
+        "Checking my recipe book... 📖",
+        "One moment while I gather my thoughts... ✨"
+    ];
+    const loadingText = loadingTexts[Math.floor(Math.random() * loadingTexts.length)];
+    
     const loadingEl = document.createElement('div');
     loadingEl.className = 'chat-message sousie loading';
     loadingEl.innerHTML = `
@@ -431,18 +494,22 @@ async function handleChatMessage(userMessage: string) {
             ${panSVG}
             <span>Sousie</span>
         </div>
-        <div class="message-content">Thinking...</div>
+        <div class="message-content">${loadingText}</div>
     `;
     chatMessages?.appendChild(loadingEl);
     chatMessages!.scrollTop = chatMessages!.scrollHeight;
     
     try {
+        // Build messages with conversation context
         const messages = [
             { role: 'system', content: SOUSIE_SYSTEM_INSTRUCTION },
-            { role: 'user', content: userMessage }
+            ...conversationHistory
         ];
         
-        const response = await callOpenAI(messages, 0.7);
+        const response = await callOpenAI(messages, 0.8); // Higher temperature for more creative responses
+        
+        // Add assistant response to conversation history
+        conversationHistory.push({ role: 'assistant', content: response });
         
         // Remove loading indicator
         loadingEl.remove();
@@ -456,6 +523,7 @@ async function handleChatMessage(userMessage: string) {
             intent_data: { 
                 message_length: userMessage.length,
                 response_length: response.length,
+                conversation_length: conversationHistory.length,
                 timestamp: new Date().toISOString()
             },
             user_input: userMessage,
@@ -466,7 +534,7 @@ async function handleChatMessage(userMessage: string) {
     } catch (error: any) {
         console.error('Chat error:', error);
         loadingEl.remove();
-        const errorMessage = 'Oops! I\'m having trouble right now. Please try again in a moment.';
+        const errorMessage = 'Oops! I\'m having trouble right now. Please try again in a moment. 😅';
         addChatMessage('sousie', errorMessage);
         
         // Track failed chat intent
@@ -475,6 +543,7 @@ async function handleChatMessage(userMessage: string) {
             intent_data: { 
                 message_length: userMessage.length,
                 error_type: error.name || 'Unknown',
+                conversation_length: conversationHistory.length,
                 timestamp: new Date().toISOString()
             },
             user_input: userMessage,
@@ -483,6 +552,44 @@ async function handleChatMessage(userMessage: string) {
             error_message: error.message
         });
     }
+}
+
+function clearChatHistory() {
+    if (!chatMessages) return;
+    
+    // Clear conversation history
+    conversationHistory = [];
+    
+    // Clear chat messages from UI
+    chatMessages.innerHTML = '';
+    
+    // Add fresh welcome message
+    const welcomeMessages = [
+        "Fresh start! 🌟 I'm ready for our new cooking conversation. What would you like to explore?",
+        "Chat cleared! ✨ Let's start fresh - what culinary questions can I help you with?",
+        "New conversation started! 👨‍🍳 What cooking adventure shall we dive into?"
+    ];
+    const welcomeMsg = welcomeMessages[Math.floor(Math.random() * welcomeMessages.length)];
+    addChatMessage('sousie', welcomeMsg);
+    
+    // Add to conversation history
+    conversationHistory.push({ role: 'assistant', content: welcomeMsg });
+    
+    // Focus on input
+    if (chatInput) {
+        chatInput.focus();
+    }
+    
+    // Track the clear action
+    trackUserIntent({
+        intent_type: 'chat_message',
+        intent_data: { 
+            action: 'clear_chat',
+            timestamp: new Date().toISOString()
+        },
+        user_input: 'Clear chat history',
+        success: true
+    });
 }
 
 // Navigation functionality
@@ -561,6 +668,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
         });
+    }
+    
+    // Clear chat button
+    if (clearChatButton) {
+        clearChatButton.addEventListener('click', clearChatHistory);
     }
     
     // Suggested questions event listeners

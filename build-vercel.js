@@ -3,11 +3,11 @@
 const { execSync } = require('child_process');
 const fs = require('fs');
 
-// Get environment variables
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY || '';
-const API_KEY = process.env.API_KEY || '';
-const SUPABASE_URL = process.env.SUPABASE_URL || '';
-const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || '';
+// Get environment variables and trim any whitespace/newlines
+const OPENAI_API_KEY = (process.env.OPENAI_API_KEY || '').trim();
+const API_KEY = (process.env.API_KEY || '').trim();
+const SUPABASE_URL = (process.env.SUPABASE_URL || '').trim();
+const SUPABASE_ANON_KEY = (process.env.SUPABASE_ANON_KEY || '').trim();
 
 // Build command with proper JSON escaping
 const buildCmd = [

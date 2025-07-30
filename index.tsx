@@ -498,6 +498,7 @@ async function handleChatMessage(userMessage: string) {
     
     // Check if this is a recipe request
     const isRecipeReq = isRecipeRequest(userMessage);
+    console.log("🔍 DEBUG: Recipe request detected:", isRecipeReq);
     
     // Add loading indicator with more dynamic text
     const loadingTexts = isRecipeReq ? [
@@ -529,6 +530,7 @@ async function handleChatMessage(userMessage: string) {
         let response: string;
         
         if (isRecipeReq) {
+            console.log("🍳 DEBUG: Processing as recipe request");
             // Generate structured recipe cards for recipe requests
             const unitInstructions = currentUnitSystem === 'us'
                 ? "US Customary units (e.g., cups, oz, lbs, tsp, tbsp)"
@@ -542,7 +544,9 @@ async function handleChatMessage(userMessage: string) {
                 { role: 'user', content: promptUserMessage }
             ];
             
+            console.log("🔧 DEBUG: Calling OpenAI for recipes...");
             response = await callOpenAI(messages, 0.3); // Lower temperature for consistent JSON
+            console.log("🔧 DEBUG: OpenAI recipe response:", response);
             
             // Clean up response if it's wrapped in code blocks
             let jsonStrToParse = response.trim();
@@ -554,6 +558,7 @@ async function handleChatMessage(userMessage: string) {
             try {
                 const recipeData = JSON.parse(jsonStrToParse);
                 console.log("🔧 DEBUG: Recipe data parsed:", recipeData);
+                console.log("🔧 DEBUG: About to render recipe cards...");
                 
                 // Remove loading indicator
                 loadingEl.remove();

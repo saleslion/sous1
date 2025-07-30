@@ -9,8 +9,8 @@ const { createClient, User } = supabase;
 export type SupabaseUser = InstanceType<typeof User>; // Export user type
 
 // --- Global Configuration & State ---
-export const SUPABASE_URL = process.env.SUPABASE_URL || 'https://ovnwftdzmuchbnmpmfev.supabase.co';
-export const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im92bndmdGR6bXVjaGJubXBtZmV2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk0NzAwODIsImV4cCI6MjA2NTA0NjA4Mn0.fGImUiJMLAHKFrnDVgw7X0nGOw3Dmm-xeAdb-GeVWJc';
+export const SUPABASE_URL = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://nvazaobnepbwzommkakz.supabase.co';
+export const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im52YXphb2JuZXBid3pvbW1rYWt6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM4NTI4MDgsImV4cCI6MjA2OTQyODgwOH0.bQI03rskb1J6zNiSsTrvUap3XGZEOvQteQ7IOMtEfww';
 
 export let supabaseClient: any;
 export let currentUser: SupabaseUser | null = null;
@@ -49,6 +49,27 @@ export interface Recipe {
   chefTip?: string;
   ingredients: string[];
   instructions: string[];
+}
+
+export interface UserProfile {
+  id: string;
+  email: string;
+  full_name?: string;
+  avatar_url?: string;
+  dietary_preferences?: string[];
+  favorite_cuisines?: string[];
+  cooking_skill_level?: 'beginner' | 'intermediate' | 'advanced' | 'expert';
+  created_at: string;
+  updated_at: string;
+}
+
+export interface UserIntent {
+  intent_type: 'chat_message' | 'recipe_search' | 'recipe_like' | 'recipe_unlike' | 'menu_generate' | 'menu_save' | 'surprise_me' | 'ingredient_search' | 'dietary_filter' | 'cuisine_preference' | 'cooking_tip_request';
+  intent_data: any;
+  user_input?: string;
+  ai_response?: string;
+  success?: boolean;
+  error_message?: string;
 }
 export interface DayMeal {
   dayName: string;
@@ -553,13 +574,29 @@ export async function handleLikeRecipe(recipeIdentifier: string, recipeName: str
                 user_id: currentUser.id,
                 recipe_identifier: recipeIdentifier,
                 recipe_name: recipeName,
-                recipe_data: recipeData
+                recipe_data: recipeData,
+                source: 'sousie_generated'
             }, { onConflict: 'user_id, recipe_identifier' });
         if (error) throw error;
         console.log(`Recipe "${recipeName}" liked and saved.`);
+        
+        // Track user intent
+        await trackUserIntent({
+            intent_type: 'recipe_like',
+            intent_data: { recipe_identifier: recipeIdentifier, recipe_name: recipeName },
+            success: true
+        });
     } catch (error: any) {
         console.error("Error saving like to Supabase:", error.message);
         alert("Oh dear! Sousie couldn't save your like right now.");
+        
+        // Track failed intent
+        await trackUserIntent({
+            intent_type: 'recipe_like',
+            intent_data: { recipe_identifier: recipeIdentifier, recipe_name: recipeName },
+            success: false,
+            error_message: error.message
+        });
     }
 }
 
@@ -576,9 +613,24 @@ export async function handleUnlikeRecipe(recipeIdentifier: string) {
             .eq('recipe_identifier', recipeIdentifier);
         if (error) throw error;
         console.log(`Recipe ID "${recipeIdentifier}" unliked.`);
+        
+        // Track user intent
+        await trackUserIntent({
+            intent_type: 'recipe_unlike',
+            intent_data: { recipe_identifier: recipeIdentifier },
+            success: true
+        });
     } catch (error: any) {
         console.error("Error removing like from Supabase:", error.message);
         alert("Oh crumbs! Sousie couldn't remove your like.");
+        
+        // Track failed intent
+        await trackUserIntent({
+            intent_type: 'recipe_unlike',
+            intent_data: { recipe_identifier: recipeIdentifier },
+            success: false,
+            error_message: error.message
+        });
     }
 }
 
@@ -607,6 +659,84 @@ export function updateHeaderActiveLinks() {
             link.classList.remove('active');
         }
     });
+}
+
+// --- Intent Tracking Functions ---
+export async function trackUserIntent(intent: UserIntent) {
+    if (!supabaseClient) return;
+    
+    const sessionId = getOrCreateSessionId();
+    
+    try {
+        const { error } = await supabaseClient
+            .from('user_intents')
+            .insert({
+                user_id: currentUser?.id || null,
+                session_id: sessionId,
+                intent_type: intent.intent_type,
+                intent_data: intent.intent_data,
+                user_input: intent.user_input,
+                ai_response: intent.ai_response,
+                success: intent.success ?? true,
+                error_message: intent.error_message
+            });
+        
+        if (error) {
+            console.warn('Failed to track user intent:', error.message);
+        }
+    } catch (error) {
+        console.warn('Error tracking user intent:', error);
+    }
+}
+
+function getOrCreateSessionId(): string {
+    let sessionId = sessionStorage.getItem('sousie_session_id');
+    if (!sessionId) {
+        sessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        sessionStorage.setItem('sousie_session_id', sessionId);
+    }
+    return sessionId;
+}
+
+// --- User Profile Functions ---
+export async function createUserProfile(userData: Partial<UserProfile>) {
+    if (!currentUser || !supabaseClient) return null;
+    
+    try {
+        const { data, error } = await supabaseClient
+            .from('user_profiles')
+            .upsert({
+                id: currentUser.id,
+                email: currentUser.email,
+                ...userData
+            })
+            .select()
+            .single();
+        
+        if (error) throw error;
+        return data;
+    } catch (error: any) {
+        console.error('Error creating user profile:', error.message);
+        return null;
+    }
+}
+
+export async function getUserProfile(): Promise<UserProfile | null> {
+    if (!currentUser || !supabaseClient) return null;
+    
+    try {
+        const { data, error } = await supabaseClient
+            .from('user_profiles')
+            .select('*')
+            .eq('id', currentUser.id)
+            .single();
+        
+        if (error) throw error;
+        return data;
+    } catch (error: any) {
+        console.error('Error fetching user profile:', error.message);
+        return null;
+    }
 }
 
 // --- Global Initializers to be called by each page script ---
@@ -641,6 +771,12 @@ export function initializeGlobalFunctionality() {
     }
 
     // Note: OpenAI API key is now handled in the main app file
+    
+    // Initialize user profile if user is logged in
+    if (currentUser && supabaseReady) {
+        initializeUserProfile();
+    }
+    
     if (!supabaseReady) { // If Supabase client failed to initialize
         const favoritesLink = document.getElementById('favorites-link') as HTMLAnchorElement | null;
         const menuLink = document.getElementById('menu-planner-link') as HTMLAnchorElement | null;
@@ -650,6 +786,27 @@ export function initializeGlobalFunctionality() {
              // menuLink.style.pointerEvents = 'none'; menuLink.style.opacity = '0.6';
         }
     }
+}
 
-
+// --- User Profile Initialization ---
+async function initializeUserProfile() {
+    if (!currentUser || !supabaseClient) return;
+    
+    try {
+        // Check if user profile exists, create if not
+        const { data: existingProfile } = await supabaseClient
+            .from('user_profiles')
+            .select('id')
+            .eq('id', currentUser.id)
+            .single();
+        
+        if (!existingProfile) {
+            await createUserProfile({
+                email: currentUser.email,
+                full_name: currentUser.user_metadata?.full_name || null
+            });
+        }
+    } catch (error: any) {
+        console.error('Error initializing user profile:', error.message);
+    }
 }

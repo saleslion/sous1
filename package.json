@@ -4,12 +4,14 @@
   "description": "AI Cooking Assistant - Sousie",
   "private": true,
   "scripts": {
-    "build:index": "esbuild index.tsx --bundle --outfile=dist/index.js --format=esm --loader:.tsx=ts --define:process.env.OPENAI_API_KEY=\\\"\"$OPENAI_API_KEY\\\"\" --define:process.env.API_KEY=\\\"\"$OPENAI_API_KEY\\\"\" --define:process.env.SUPABASE_URL=\\\"\"$SUPABASE_URL\\\"\" --define:process.env.SUPABASE_ANON_KEY=\\\"\"$SUPABASE_ANON_KEY\\\"\"",
-    "build:menu": "esbuild menu.tsx --bundle --outfile=dist/menu.js --format=esm --loader:.tsx=ts --define:process.env.OPENAI_API_KEY=\\\"\"$OPENAI_API_KEY\\\"\" --define:process.env.API_KEY=\\\"\"$OPENAI_API_KEY\\\"\" --define:process.env.SUPABASE_URL=\\\"\"$SUPABASE_URL\\\"\" --define:process.env.SUPABASE_ANON_KEY=\\\"\"$SUPABASE_ANON_KEY\\\"\"",
-    "build:favorites": "esbuild favorites.tsx --bundle --outfile=dist/favorites.js --format=esm --loader:.tsx=ts --define:process.env.OPENAI_API_KEY=\\\"\"$OPENAI_API_KEY\\\"\" --define:process.env.API_KEY=\\\"\"$OPENAI_API_KEY\\\"\" --define:process.env.SUPABASE_URL=\\\"\"$SUPABASE_URL\\\"\" --define:process.env.SUPABASE_ANON_KEY=\\\"\"$SUPABASE_ANON_KEY\\\"\"",
+    "env": "export $(grep -v '^#' .env.local | xargs)",
+    "build:index": "export $(grep -v '^#' .env.local | xargs) && esbuild index.tsx --bundle --outfile=dist/index.js --format=esm --loader:.tsx=ts --define:process.env.OPENAI_API_KEY=\\\"\"$OPENAI_API_KEY\\\"\" --define:process.env.API_KEY=\\\"\"$API_KEY\\\"\" --define:process.env.SUPABASE_URL=\\\"\"$SUPABASE_URL\\\"\" --define:process.env.SUPABASE_ANON_KEY=\\\"\"$SUPABASE_ANON_KEY\\\"\"",
+    "build:menu": "export $(grep -v '^#' .env.local | xargs) && esbuild menu.tsx --bundle --outfile=dist/menu.js --format=esm --loader:.tsx=ts --define:process.env.OPENAI_API_KEY=\\\"\"$OPENAI_API_KEY\\\"\" --define:process.env.API_KEY=\\\"\"$API_KEY\\\"\" --define:process.env.SUPABASE_URL=\\\"\"$SUPABASE_URL\\\"\" --define:process.env.SUPABASE_ANON_KEY=\\\"\"$SUPABASE_ANON_KEY\\\"\"",
+    "build:favorites": "export $(grep -v '^#' .env.local | xargs) && esbuild favorites.tsx --bundle --outfile=dist/favorites.js --format=esm --loader:.tsx=ts --define:process.env.OPENAI_API_KEY=\\\"\"$OPENAI_API_KEY\\\"\" --define:process.env.API_KEY=\\\"\"$API_KEY\\\"\" --define:process.env.SUPABASE_URL=\\\"\"$SUPABASE_URL\\\"\" --define:process.env.SUPABASE_ANON_KEY=\\\"\"$SUPABASE_ANON_KEY\\\"\"",
     "build": "mkdir -p public && npm run build:index && cp index.html public/ && cp index.css public/ && cp -r dist public/",
     "dev": "npm run build && npx serve public -p 3000",
-    "start": "npx serve public -p 3000"
+    "start": "npx serve public -p 3000",
+    "db:setup": "node setup-database.js"
   },
   "devDependencies": {
     "esbuild": "^0.20.0"

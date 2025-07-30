@@ -5,7 +5,8 @@ import {
     currentUser, currentUnitSystem,
     initializeGlobalFunctionality,
     sanitizeHTML, generateDynamicLoadingMessage,
-    createExpandableRecipeCard, updateUnitSystem, panSVG
+    createExpandableRecipeCard, updateUnitSystem, panSVG,
+    trackUserIntent
 } from "./core";
 
 // OpenAI Configuration
@@ -171,6 +172,14 @@ async function handleSuggestRecipes(ingredientsQuery?: string) {
         displayRecipeError("Sousie needs some ingredients to work her magic! Please enter some.");
         return;
     }
+    
+    // Track recipe search intent
+    const searchData = {
+        ingredients: ingredients.split(',').map(i => i.trim()),
+        dietary_restrictions: dietaryRestrictions || null,
+        search_type: 'ingredient_based',
+        timestamp: new Date().toISOString()
+    };
 
     setRecipeSuggestionsLoading(true, ingredients);
     if (!isUnitUpdatingRecipes) {
@@ -217,9 +226,33 @@ async function handleSuggestRecipes(ingredientsQuery?: string) {
         const data = JSON.parse(jsonStrToParse);
         if (!isUnitUpdatingRecipes) lastSuccessfulFetchSeed = seedForCurrentApiCall;
         displayResults(data, 'recipes');
+        
+        // Track successful recipe search
+        await trackUserIntent({
+            intent_type: 'recipe_search',
+            intent_data: {
+                ...searchData,
+                results_count: data.mealPairings?.length || 0,
+                unit_system: currentUnitSystem
+            },
+            user_input: `Ingredients: ${ingredients}${dietaryRestrictions ? `, Dietary: ${dietaryRestrictions}` : ''}`,
+            success: true
+        });
     } catch (error: any) {
         console.error("Error suggesting recipes:", error);
         displayRecipeError("Oh no! Sousie had trouble fetching recipes. Check ingredients or try again.");
+        
+        // Track failed recipe search
+        await trackUserIntent({
+            intent_type: 'recipe_search',
+            intent_data: {
+                ...searchData,
+                error_type: error.name || 'Unknown'
+            },
+            user_input: `Ingredients: ${ingredients}${dietaryRestrictions ? `, Dietary: ${dietaryRestrictions}` : ''}`,
+            success: false,
+            error_message: error.message
+        });
     } finally {
         setRecipeSuggestionsLoading(false);
     }
@@ -234,6 +267,13 @@ async function handleSurpriseMe() {
         lastUserIngredients = null;
         lastUserDietary = dietaryRestrictions;
     }
+    
+    // Track surprise me intent
+    const surpriseData = {
+        dietary_restrictions: dietaryRestrictions || null,
+        search_type: 'surprise',
+        timestamp: new Date().toISOString()
+    };
     let seedForCurrentApiCall = isUnitUpdatingRecipes && lastSuccessfulFetchSeed !== null ? lastSuccessfulFetchSeed : Math.floor(Math.random() * 1000000);
     const unitInstructions = currentUnitSystem === 'us' ? "US Customary units" : "Metric units";
     const recipeObjectJsonFormat = `"name": "Recipe Name", "description": "Desc.", "anecdote": "Story.", "chefTip": "Tip.", "ingredients": ["1 item"], "instructions": ["1 step"]`;
@@ -259,9 +299,33 @@ async function handleSurpriseMe() {
         const data = JSON.parse(jsonStrToParse);
         if (!isUnitUpdatingRecipes) lastSuccessfulFetchSeed = seedForCurrentApiCall;
         displayResults(data, 'surprise');
-    } catch (error) {
+        
+        // Track successful surprise request
+        await trackUserIntent({
+            intent_type: 'surprise_me',
+            intent_data: {
+                ...surpriseData,
+                results_count: data.mealPairings?.length || 0,
+                unit_system: currentUnitSystem
+            },
+            user_input: dietaryRestrictions ? `Surprise me (Dietary: ${dietaryRestrictions})` : 'Surprise me',
+            success: true
+        });
+    } catch (error: any) {
         console.error("Error fetching surprise:", error);
         displayRecipeError("Oops! Sousie couldn't conjure her surprise recipes this time.");
+        
+        // Track failed surprise request
+        await trackUserIntent({
+            intent_type: 'surprise_me',
+            intent_data: {
+                ...surpriseData,
+                error_type: error.name || 'Unknown'
+            },
+            user_input: dietaryRestrictions ? `Surprise me (Dietary: ${dietaryRestrictions})` : 'Surprise me',
+            success: false,
+            error_message: error.message
+        });
     } finally {
         setRecipeSuggestionsLoading(false);
     }
@@ -386,10 +450,38 @@ async function handleChatMessage(userMessage: string) {
         // Add Sousie's response
         addChatMessage('sousie', response);
         
+        // Track successful chat intent
+        await trackUserIntent({
+            intent_type: 'chat_message',
+            intent_data: { 
+                message_length: userMessage.length,
+                response_length: response.length,
+                timestamp: new Date().toISOString()
+            },
+            user_input: userMessage,
+            ai_response: response,
+            success: true
+        });
+        
     } catch (error: any) {
         console.error('Chat error:', error);
         loadingEl.remove();
-        addChatMessage('sousie', 'Oops! I\'m having trouble right now. Please try again in a moment.');
+        const errorMessage = 'Oops! I\'m having trouble right now. Please try again in a moment.';
+        addChatMessage('sousie', errorMessage);
+        
+        // Track failed chat intent
+        await trackUserIntent({
+            intent_type: 'chat_message',
+            intent_data: { 
+                message_length: userMessage.length,
+                error_type: error.name || 'Unknown',
+                timestamp: new Date().toISOString()
+            },
+            user_input: userMessage,
+            ai_response: errorMessage,
+            success: false,
+            error_message: error.message
+        });
     }
 }
 

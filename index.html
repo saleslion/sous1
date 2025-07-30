@@ -398,6 +398,253 @@
         0% { transform: rotate(0deg); }
         100% { transform: rotate(360deg); }
       }
+      
+      /* Recipe Cards */
+      .recipes-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 20px;
+        margin-top: 20px;
+      }
+      
+      .recipe-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        position: relative;
+        transition: transform 0.2s, box-shadow 0.2s;
+      }
+      
+      .recipe-card:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg);
+      }
+      
+      .recipe-summary {
+        padding: 20px;
+      }
+      
+      .recipe-summary h3 {
+        color: var(--text);
+        font-size: 18px;
+        font-weight: 600;
+        margin-bottom: 8px;
+      }
+      
+      .recipe-summary p {
+        color: var(--text-muted);
+        font-size: 14px;
+        line-height: 1.5;
+        margin-bottom: 16px;
+      }
+      
+      .like-button {
+        position: absolute;
+        top: 16px;
+        right: 16px;
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 8px;
+        border-radius: 50%;
+        transition: background 0.2s;
+      }
+      
+      .like-button:hover {
+        background: rgba(0,0,0,0.1);
+      }
+      
+      .like-button svg {
+        width: 20px;
+        height: 20px;
+        fill: #ccc;
+        transition: fill 0.2s;
+      }
+      
+      .like-button.liked svg {
+        fill: var(--primary);
+      }
+      
+      .expand-toggle {
+        background: var(--primary);
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 6px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+        font-weight: 500;
+        transition: background 0.2s;
+      }
+      
+      .expand-toggle:hover {
+        background: var(--primary-dark);
+      }
+      
+      .expand-toggle svg {
+        width: 16px;
+        height: 16px;
+        fill: currentColor;
+        transition: transform 0.2s;
+      }
+      
+      .recipe-card.expanded .expand-toggle svg {
+        transform: rotate(180deg);
+      }
+      
+      .recipe-details {
+        border-top: 1px solid var(--border);
+        padding: 20px;
+      }
+      
+      .recipe-component {
+        margin-bottom: 24px;
+      }
+      
+      .recipe-component:last-child {
+        margin-bottom: 0;
+      }
+      
+      .recipe-component-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--text);
+        margin-bottom: 12px;
+        padding-bottom: 8px;
+        border-bottom: 2px solid var(--primary);
+      }
+      
+      .recipe-component h5 {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text);
+        margin: 16px 0 8px 0;
+      }
+      
+      .recipe-component ul,
+      .recipe-component ol {
+        margin: 0 0 16px 20px;
+        padding: 0;
+      }
+      
+      .recipe-component li {
+        margin-bottom: 4px;
+        color: var(--text);
+        font-size: 14px;
+        line-height: 1.5;
+      }
+      
+      .sousie-extra-info {
+        background: #f8f9fa;
+        border-left: 4px solid var(--primary);
+        padding: 12px 16px;
+        margin: 12px 0;
+        border-radius: 0 8px 8px 0;
+      }
+      
+      .anecdote-text {
+        font-style: italic;
+        color: var(--text-muted);
+        margin-bottom: 8px;
+      }
+      
+      .chef-tip-text {
+        color: var(--text);
+        font-size: 13px;
+      }
+      
+      /* Messages */
+      .message {
+        padding: 16px 20px;
+        border-radius: 8px;
+        margin: 16px 0;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 14px;
+        line-height: 1.5;
+      }
+      
+      .message.info-message {
+        background: #e3f2fd;
+        border: 1px solid #90caf9;
+        color: #1565c0;
+      }
+      
+      .message.error-message {
+        background: #ffebee;
+        border: 1px solid #ef5350;
+        color: #c62828;
+      }
+      
+      .message.loading-message {
+        background: #fff3e0;
+        border: 1px solid #ffb74d;
+        color: #e65100;
+      }
+      
+      .chef-hat-icon-title {
+        width: 20px;
+        height: 20px;
+        flex-shrink: 0;
+      }
+      
+      /* Chat Messages */
+      .chat-message {
+        margin-bottom: 16px;
+      }
+      
+      .chat-message.user .message-content {
+        background: var(--primary);
+        color: white;
+        padding: 12px 16px;
+        border-radius: 16px;
+        border-bottom-right-radius: 4px;
+        max-width: 80%;
+        margin-left: auto;
+        font-size: 14px;
+      }
+      
+      .chat-message.sousie {
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
+      }
+      
+      .message-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 8px;
+        font-weight: 600;
+        color: var(--text);
+      }
+      
+      .message-header svg {
+        width: 20px;
+        height: 20px;
+      }
+      
+      .chat-message.sousie .message-content {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        padding: 12px 16px;
+        border-radius: 16px;
+        border-bottom-left-radius: 4px;
+        box-shadow: var(--shadow);
+        flex: 1;
+        font-size: 14px;
+        line-height: 1.5;
+      }
+      
+      .chat-message.loading .message-content {
+        opacity: 0.7;
+        font-style: italic;
+      }
     </style>
   </head>
   <body>

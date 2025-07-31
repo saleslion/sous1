@@ -232,9 +232,26 @@ function displayResults(data: any, type: 'recipes' | 'surprise') {
     console.log('🔧 DEBUG: Clearing results container and displaying new results');
     resultsContainer.innerHTML = '';
 
+    // Minimize the recipe finder form when showing results
+    const recipeFinderForm = document.getElementById('recipe-finder-form');
+    
     if (data.mealPairings && Array.isArray(data.mealPairings) && data.mealPairings.length > 0) {
         const grid = document.createElement('div');
         grid.className = 'recipes-grid';
+        
+        // Add a header for the results
+        const resultsHeader = document.createElement('div');
+        resultsHeader.style.cssText = 'margin-bottom: 24px; text-align: center;';
+        resultsHeader.innerHTML = `
+            <h3 style="font-size: 24px; font-weight: 600; color: var(--text); margin-bottom: 8px;">
+                ${type === 'surprise' ? '🎲 Surprise Recipes' : '🍳 Recipe Suggestions'}
+            </h3>
+            <p style="color: var(--text-muted); font-size: 16px;">
+                ${data.mealPairings.length} delicious ${data.mealPairings.length === 1 ? 'recipe' : 'recipes'} ready for you!
+            </p>
+        `;
+        resultsContainer.appendChild(resultsHeader);
+        
         data.mealPairings.forEach((mealPairing: any, index: number) => {
             if (mealPairing && mealPairing.mainRecipe) {
                 grid.appendChild(createExpandableRecipeCard(mealPairing, `${type}-${index}`, false));
@@ -247,15 +264,32 @@ function displayResults(data: any, type: 'recipes' | 'surprise') {
         } else {
             resultsContainer.innerHTML = `<div class="message info-message">${panSVG} Sousie found some ideas, but they weren't quite ready. Try again!</div>`;
         }
+        
+        // Minimize the form
+        if (recipeFinderForm) {
+            recipeFinderForm.style.cssText = 'padding: 24px; text-align: center; background: var(--background); border-radius: 8px; margin-top: 32px;';
+            recipeFinderForm.innerHTML = `
+                <h4 style="font-size: 18px; font-weight: 600; color: var(--text); margin-bottom: 16px;">Want more recipes?</h4>
+                <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+                    <button id="suggest-button" class="btn btn-primary">Find More Recipes</button>
+                    <button id="surprise-button" class="btn btn-outline">Surprise Me Again</button>
+                    <button id="start-over-button" class="btn btn-outline">Start Over</button>
+                </div>
+            `;
+            // Re-initialize buttons after changing innerHTML
+            setTimeout(() => {
+                initializeRecipeFinderButtons();
+            }, 100);
+        }
     } else {
         resultsContainer.innerHTML = `<div class="message info-message">${panSVG} Sousie pondered, but couldn't find specific meal pairings for that. Try different ingredients or ask for a surprise!</div>`;
     }
     
-    // Scroll the results into view
-    resultsContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    
-    // Also scroll to top of results container
-    resultsContainer.scrollTop = 0;
+    // Scroll to the top of the view to show results
+    const recipesView = document.getElementById('recipes-view');
+    if (recipesView) {
+        recipesView.scrollTop = 0;
+    }
 }
 
 // OpenAI API call function
@@ -506,11 +540,47 @@ async function handleSurpriseMe() {
 }
 
 function handleRecipePageStartOver() {
-    if (isLoadingRecipes || !ingredientsInput || !dietaryInput || !resultsContainer) return;
-    ingredientsInput.value = '';
-    dietaryInput.value = '';
-    resultsContainer.innerHTML = `<div class="message info-message">${panSVG}Ready for new ideas! What ingredients does Sousie have to work with today?</div>`;
-    ingredientsInput.focus();
+    if (isLoadingRecipes || !resultsContainer) return;
+    
+    // Clear results
+    resultsContainer.innerHTML = '';
+    
+    // Restore the original form
+    const recipeFinderForm = document.getElementById('recipe-finder-form');
+    if (recipeFinderForm) {
+        recipeFinderForm.style.cssText = '';
+        recipeFinderForm.className = 'welcome-screen';
+        recipeFinderForm.innerHTML = `
+            <div class="welcome-icon">
+                <i class="fas fa-search"></i>
+            </div>
+            <h2 class="welcome-title">Recipe Finder</h2>
+            <p class="welcome-subtitle">
+                Tell me what ingredients you have, and I'll suggest delicious recipes you can make!
+            </p>
+            <div style="max-width: 400px; width: 100%;">
+                <div style="margin-bottom: 16px;">
+                    <input id="ingredients-input" type="text" class="chat-input" placeholder="e.g., chicken, potatoes, onions" style="width: 100%; margin-bottom: 12px;" />
+                    <input id="dietary-input" type="text" class="chat-input" placeholder="Dietary preferences (optional)" style="width: 100%;" />
+                </div>
+                <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                    <button id="suggest-button" class="btn btn-primary">Find Recipes</button>
+                    <button id="surprise-button" class="btn btn-outline">Surprise Me</button>
+                    <button id="start-over-button" class="btn btn-outline">Start Over</button>
+                </div>
+            </div>
+        `;
+        
+        // Re-initialize buttons and get fresh DOM references
+        setTimeout(() => {
+            initializeRecipeFinderButtons();
+            const newIngredientsInput = document.getElementById('ingredients-input') as HTMLInputElement;
+            if (newIngredientsInput) {
+                newIngredientsInput.focus();
+            }
+        }, 100);
+    }
+    
     lastUserIngredients = null;
     lastUserDietary = null;
     lastFetchWasSurprise = false;

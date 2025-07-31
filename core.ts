@@ -358,7 +358,7 @@ export function sanitizeHTML(text: string): string {
     return temp.innerHTML;
 }
 
-export const panSVG = `<svg class="chef-hat-icon-title" viewBox="0 0 262 262" xmlns="http://www.w3.org/2000/svg"><g fill-rule="evenodd"><path d="M151.552 143.4l91.208-91.207a10.97 10.97 0 0 0 0-15.514L227.246 21.16a10.97 10.97 0 0 0-15.514 0L120.52 112.37l25.842 25.842 5.19 5.189z" fill="#273347"/><path d="M131.623 241.667c61.662 0 111.66-49.998 111.66-111.66 0-61.662-49.998-111.66-111.66-111.66-61.662 0-111.66 49.998-111.66 111.66 0 61.662 49.998 111.66 111.66 111.66zm0-15.514c-53.076 0-96.146-43.07-96.146-96.146s43.07-96.146 96.146-96.146 96.146 43.07 96.146 96.146-43.07 96.146-96.146 96.146z" fill="#FF7A2F"/></g></svg>`;
+export const panSVG = `<svg class="chef-hat-icon-title" viewBox="0 0 262 262" xmlns="http://www.w3.org/2000/svg"><g fill-rule="evenodd"><path d="M151.552 143.4l91.208-91.207a10.97 10.97 0 0 0 0-15.514L227.246 21.16a10.97 10.97 0 0 0-15.514 0L120.52 112.37l25.842 25.842 5.19 5.189z" fill="#004499"/><path d="M131.623 241.667c61.662 0 111.66-49.998 111.66-111.66 0-61.662-49.998-111.66-111.66-111.66-61.662 0-111.66 49.998-111.66 111.66 0 61.662 49.998 111.66 111.66 111.66zm0-15.514c-53.076 0-96.146-43.07-96.146-96.146s43.07-96.146 96.146-96.146 96.146 43.07 96.146 96.146-43.07 96.146-96.146 96.146z" fill="#0066CC"/></g></svg>`;
 
 export function generateDynamicLoadingMessage(ingredientsText?: string): DynamicLoadingMessageParts {
      const openers = ["Alright!", "Ooh la la!", "Let's dive in!", "Excellent choice!", "Here we go!", "Fabulous!"];

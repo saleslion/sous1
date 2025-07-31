@@ -9,6 +9,7 @@ import {
     trackUserIntent
 } from "./core";
 import { SOUSIE_SYSTEM_INSTRUCTION, RECIPE_GENERATION_INSTRUCTION } from "./prompts";
+import { createMealPairingsFromDB, type MealPairing } from "./recipe-api";
 
 // OpenAI Configuration
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY || process.env.API_KEY;
@@ -44,6 +45,101 @@ let lastSuccessfulFetchSeed: number | null = null;
 let conversationHistory: Array<{role: string, content: string}> = [];
 
 // System prompts are now imported from prompts.ts
+
+// Hybrid recipe generation: Database first, AI fallback
+async function generateHybridRecipes(ingredients: string[], dietary: string): Promise<{mealPairings: MealPairing[]}> {
+    console.log('🔄 Starting hybrid recipe generation...');
+    
+    // Step 1: Try to get recipes from TheMealDB
+    let dbRecipes: MealPairing[] = [];
+    
+    try {
+        if (ingredients.length > 0) {
+            // Parse ingredients from input
+            const ingredientList = ingredients[0].split(',').map(ing => ing.trim()).filter(ing => ing);
+            console.log('🔍 Searching database for ingredients:', ingredientList);
+            
+            dbRecipes = await createMealPairingsFromDB(ingredientList);
+        } else {
+            // No specific ingredients, get random recipes
+            console.log('🎲 Getting random recipes from database...');
+            dbRecipes = await createMealPairingsFromDB([]);
+        }
+        
+        console.log(`📊 Database returned ${dbRecipes.length} recipes`);
+        
+        // If we have good database results, use them
+        if (dbRecipes.length >= 2) {
+            console.log('✅ Using database recipes');
+            return { mealPairings: dbRecipes };
+        }
+        
+    } catch (error) {
+        console.error('❌ Database search failed:', error);
+    }
+    
+    // Step 2: If database didn't provide enough recipes, use AI
+    console.log('🤖 Falling back to AI generation...');
+    
+    try {
+        const unitInstructions = currentUnitSystem === 'us'
+            ? "US Customary units (e.g., cups, oz, lbs, tsp, tbsp)"
+            : "Metric units (e.g., ml, grams, kg, L)";
+        
+        const recipeObjectJsonFormat = `"name": "Recipe Name", "description": "Desc.", "anecdote": "Story.", "chefTip": "Tip.", "ingredients": ["1 cup flour"], "instructions": ["Preheat."]`;
+        
+        let promptUserMessage: string;
+        
+        if (ingredients.length > 0 && ingredients[0].trim()) {
+            promptUserMessage = `Using ingredients: "${ingredients[0]}"${dietary ? ` with dietary preferences: "${dietary}"` : ""}, suggest 3 distinct "mealPairings". Each MUST include: "mainRecipe" object and "sideRecipe" object (could be traditional side or dessert). Use ${unitInstructions}. Both "mainRecipe" and "sideRecipe" objects MUST contain: ${recipeObjectJsonFormat}. All fields are mandatory and non-empty. 'ingredients' and 'instructions' arrays MUST NOT be empty. Each "mealTitle" must be a creative, descriptive name for the meal pairing. KEEP ALL TEXT FIELDS CONCISE (under 200 chars each). Final JSON structure: {"mealPairings": [{"mealTitle": "Creative Meal Name Here", "mainRecipe": {...}, "sideRecipe": {...}}, ...3 pairings]}. RESPOND ONLY WITH VALID, COMPLETE JSON. NO OTHER TEXT.`;
+        } else {
+            promptUserMessage = `Generate 3 creative surprise "mealPairings"${dietary ? ` that are ${dietary}` : ""}. Each MUST include: "mainRecipe" object and "sideRecipe" object. Use ${unitInstructions}. Both recipe objects MUST contain: ${recipeObjectJsonFormat}. All fields mandatory and non-empty. 'ingredients' and 'instructions' arrays MUST NOT be empty. Each "mealTitle" must be creative and descriptive. KEEP ALL TEXT FIELDS CONCISE (under 200 chars each). Final JSON structure: {"mealPairings": [{"mealTitle": "Creative Meal Name Here", "mainRecipe": {...}, "sideRecipe": {...}}, ...3 pairings]}. RESPOND ONLY WITH VALID, COMPLETE JSON. NO OTHER TEXT.`;
+        }
+        
+        const messages = [
+            { role: 'system', content: RECIPE_GENERATION_INSTRUCTION },
+            { role: 'user', content: promptUserMessage }
+        ];
+        
+        const response = await callOpenAI(messages, 0.3);
+        
+        // Parse AI response
+        let jsonStrToParse = response.trim();
+        const match = jsonStrToParse.match(/^```(?:json)?\s*\n?(.*?)\n?\s*```$/s);
+        if (match && match[1]) {
+            jsonStrToParse = match[1].trim();
+        }
+        
+        jsonStrToParse = jsonStrToParse
+            .replace(/[\u0000-\u001F\u007F-\u009F]/g, '')
+            .replace(/,(\s*[}\]])/g, '$1')
+            .trim();
+        
+        const aiRecipeData = JSON.parse(jsonStrToParse);
+        
+        // Mark AI recipes with source
+        if (aiRecipeData.mealPairings) {
+            aiRecipeData.mealPairings.forEach((pairing: any) => {
+                if (pairing.mainRecipe) pairing.mainRecipe.source = 'ai_generated';
+                if (pairing.sideRecipe) pairing.sideRecipe.source = 'ai_generated';
+            });
+        }
+        
+        console.log('✅ Using AI-generated recipes');
+        return aiRecipeData;
+        
+    } catch (aiError) {
+        console.error('❌ AI generation also failed:', aiError);
+        
+        // Last fallback: return any database recipes we found
+        if (dbRecipes.length > 0) {
+            console.log('🔄 Using partial database results as final fallback');
+            return { mealPairings: dbRecipes };
+        }
+        
+        throw new Error('Both database and AI recipe generation failed');
+    }
+}
 
 
 function initializeDOMReferences() {
@@ -361,30 +457,15 @@ async function handleSuggestRecipes(ingredientsQuery?: string) {
         ? "US Customary units (e.g., cups, oz, lbs, tsp, tbsp)"
         : "Metric units (e.g., ml, grams, kg, L)";
     const recipeObjectJsonFormat = `"name": "Recipe Name", "description": "Desc.", "anecdote": "Story.", "chefTip": "Tip.", "ingredients": ["1 cup flour"], "instructions": ["Preheat." ]`;
-    let dietaryClause = dietaryRestrictions ? `Strictly adhere to dietary restrictions: "${dietaryRestrictions}".` : "";
-
-    const promptUserMessage = `I have: "${ingredientList.join(' and ')}". Suggest 4 distinct "mealPairings". Each MUST include: "mainRecipe" object and "sideRecipe" object (could be traditional side or dessert). Use ${unitInstructions}. ${dietaryClause} Both "mainRecipe" and "sideRecipe" objects MUST contain: ${recipeObjectJsonFormat}. All fields are mandatory and non-empty. 'ingredients' and 'instructions' arrays MUST NOT be empty. Each "mealTitle" must be a creative, descriptive name for the meal pairing (e.g., "Classic Comfort Dinner", "Mediterranean Feast", "Spicy Asian Night"). Final JSON structure: {"mealPairings": [{"mealTitle": "Creative Meal Name Here", "mainRecipe": {...}, "sideRecipe": {...}}, ...4 pairings]}. RESPOND ONLY WITH VALID JSON. NO OTHER TEXT.`;
+    // Variables kept for potential future use in logging
 
     try {
-        const messages = [
-            { role: 'system', content: RECIPE_GENERATION_INSTRUCTION },
-            { role: 'user', content: promptUserMessage }
-        ];
+        console.log('🔧 DEBUG: Using hybrid recipe generation system...');
         
-        const response = await callOpenAI(messages, 0.3); // Lower temperature for consistent JSON
-        console.log("🔧 DEBUG: OpenAI raw response:", response);
-        let jsonStrToParse = response.trim();
+        // Use hybrid system: Database first, AI fallback
+        const data = await generateHybridRecipes([ingredients], dietaryRestrictions);
         
-        // Clean up response if it's wrapped in code blocks
-        const match = jsonStrToParse.match(/^```(?:json)?\s*\n?(.*?)\n?\s*```$/s);
-        if (match && match[1]) {
-            jsonStrToParse = match[1].trim();
-        }
-        
-        if (!jsonStrToParse) throw new Error("Empty AI response for recipe suggestions.");
-        console.log("🔧 DEBUG: JSON to parse:", jsonStrToParse);
-        const data = JSON.parse(jsonStrToParse);
-        console.log("🔧 DEBUG: Parsed data:", data);
+        console.log("🔧 DEBUG: Hybrid system returned:", data);
         if (!isUnitUpdatingRecipes) lastSuccessfulFetchSeed = seedForCurrentApiCall;
         displayResults(data, 'recipes');
         
@@ -453,31 +534,14 @@ async function handleSurpriseMe() {
     };
     let seedForCurrentApiCall = isUnitUpdatingRecipes && lastSuccessfulFetchSeed !== null ? lastSuccessfulFetchSeed : Math.floor(Math.random() * 1000000);
     const unitInstructions = currentUnitSystem === 'us' ? "US Customary units" : "Metric units";
-    const recipeObjectJsonFormat = `"name": "Recipe Name", "description": "Desc.", "anecdote": "Story.", "chefTip": "Tip.", "ingredients": ["1 item"], "instructions": ["1 step"]`;
-    let dietaryClause = dietaryRestrictions ? `Strictly adhere to: "${dietaryRestrictions}".` : "";
-    const promptUserMessage = `Surprise me with 4 distinct "mealPairings". Each MUST include: "mainRecipe" & "sideRecipe" object (side can be dessert). Use ${unitInstructions}. ${dietaryClause} Both recipes MUST contain: ${recipeObjectJsonFormat}. All fields mandatory & non-empty. 'ingredients' & 'instructions' arrays MUST NOT be empty. Each "mealTitle" must be a creative, descriptive name for the meal pairing (e.g., "Tuscan Sunset", "Cozy Winter Evening", "Tropical Paradise"). JSON: {"mealPairings": [{"mealTitle": "Creative Meal Name Here", "mainRecipe": {...}, "sideRecipe": {...}}, ...4 pairings]}. RESPOND ONLY WITH VALID JSON. NO OTHER TEXT.`;
+    // Variables kept for potential future use in logging
 
-    console.log('🔧 DEBUG: About to call OpenAI for Surprise Me...');
+    console.log('🔧 DEBUG: Using hybrid system for Surprise Me...');
     try {
-        const messages = [
-            { role: 'system', content: RECIPE_GENERATION_INSTRUCTION },
-            { role: 'user', content: promptUserMessage }
-        ];
+        // Use hybrid system: Database first (random recipes), AI fallback
+        const data = await generateHybridRecipes([], dietaryRestrictions);
         
-        console.log('🔧 DEBUG: Calling OpenAI with messages:', messages);
-        const response = await callOpenAI(messages, 0.5); // Moderate temperature for creative but structured JSON
-        console.log('🔧 DEBUG: Got OpenAI response:', response);
-        console.log('🔧 DEBUG: Starting JSON parsing...');
-        let jsonStrToParse = response.trim();
-        
-        // Clean up response if it's wrapped in code blocks
-        const match = jsonStrToParse.match(/^```(?:json)?\s*\n?(.*?)\n?\s*```$/s);
-        if (match && match[1]) {
-            jsonStrToParse = match[1].trim();
-        }
-        
-        if (!jsonStrToParse) throw new Error("Empty AI response for surprise.");
-        const data = JSON.parse(jsonStrToParse);
+        console.log('🔧 DEBUG: Hybrid system returned surprise data:', data);
         if (!isUnitUpdatingRecipes) lastSuccessfulFetchSeed = seedForCurrentApiCall;
         displayResults(data, 'surprise');
         

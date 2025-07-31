@@ -93,6 +93,7 @@ function initializeDOMReferences() {
 }
 
 function setRecipeSuggestionsLoading(loading: boolean, ingredientsForLoadingMessage?: string) {
+    console.log('🔧 DEBUG: setRecipeSuggestionsLoading called:', { loading, ingredientsForLoadingMessage });
     isLoadingRecipes = loading;
     if (ingredientsInput) ingredientsInput.disabled = loading;
     if (dietaryInput) dietaryInput.disabled = loading;
@@ -333,8 +334,14 @@ async function handleSurpriseMe() {
         return;
     }
     const dietaryRestrictions = dietaryInput.value.trim();
+    console.log('🔧 DEBUG: Surprise Me dietary restrictions:', dietaryRestrictions);
+    
+    console.log('🔧 DEBUG: Setting loading state...');
     setRecipeSuggestionsLoading(true, "a delightful surprise");
+    console.log('🔧 DEBUG: Loading state set');
+    
     if (!isUnitUpdatingRecipes) {
+        console.log('🔧 DEBUG: Setting surprise me state variables');
         lastFetchWasSurprise = true;
         lastUserIngredients = null;
         lastUserDietary = dietaryRestrictions;
@@ -352,13 +359,16 @@ async function handleSurpriseMe() {
     let dietaryClause = dietaryRestrictions ? `Strictly adhere to: "${dietaryRestrictions}".` : "";
     const promptUserMessage = `Surprise me with 4 distinct "mealPairings". Each MUST include: "mainRecipe" & "sideRecipe" object (side can be dessert). Use ${unitInstructions}. ${dietaryClause} Both recipes MUST contain: ${recipeObjectJsonFormat}. All fields mandatory & non-empty. 'ingredients' & 'instructions' arrays MUST NOT be empty. JSON: {"mealPairings": [{"mealTitle": "Opt. Title", "mainRecipe": {...}, "sideRecipe": {...}}, ...4 pairings]}. RESPOND ONLY WITH VALID JSON. NO OTHER TEXT.`;
 
+    console.log('🔧 DEBUG: About to call OpenAI for Surprise Me...');
     try {
         const messages = [
             { role: 'system', content: RECIPE_GENERATION_INSTRUCTION },
             { role: 'user', content: promptUserMessage }
         ];
         
+        console.log('🔧 DEBUG: Calling OpenAI with messages:', messages);
         const response = await callOpenAI(messages, 0.5); // Moderate temperature for creative but structured JSON
+        console.log('🔧 DEBUG: Got OpenAI response:', response);
         let jsonStrToParse = response.trim();
         
         // Clean up response if it's wrapped in code blocks

@@ -149,7 +149,12 @@ function displayRecipeError(message: string) {
 
 
 function displayResults(data: any, type: 'recipes' | 'surprise') {
-    if (!resultsContainer) return;
+    console.log('🔧 DEBUG: displayResults called with type:', type, 'data:', data);
+    if (!resultsContainer) {
+        console.error('🔧 DEBUG: No results container found!');
+        return;
+    }
+    console.log('🔧 DEBUG: Clearing results container and displaying new results');
     resultsContainer.innerHTML = '';
 
     if (data.mealPairings && Array.isArray(data.mealPairings) && data.mealPairings.length > 0) {
@@ -170,15 +175,22 @@ function displayResults(data: any, type: 'recipes' | 'surprise') {
     } else {
         resultsContainer.innerHTML = `<div class="message info-message">${panSVG} Sousie pondered, but couldn't find specific meal pairings for that. Try different ingredients or ask for a surprise!</div>`;
     }
+    
+    // Scroll the results into view
+    resultsContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    
+    // Also scroll to top of results container
     resultsContainer.scrollTop = 0;
 }
 
 // OpenAI API call function
 async function callOpenAI(messages: any[], temperature: number = 0.7): Promise<string> {
+    console.log('🔧 DEBUG: callOpenAI started');
     if (!OPENAI_API_KEY) {
         throw new Error('OpenAI API key not configured');
     }
     
+    console.log('🔧 DEBUG: Making fetch request to OpenAI...');
     const response = await fetch(`${OPENAI_BASE_URL}/chat/completions`, {
         method: 'POST',
         headers: {
@@ -193,11 +205,15 @@ async function callOpenAI(messages: any[], temperature: number = 0.7): Promise<s
         })
     });
     
+    console.log('🔧 DEBUG: Got response from OpenAI, status:', response.status);
     if (!response.ok) {
+        console.error('🔧 DEBUG: OpenAI API error:', response.statusText);
         throw new Error(`OpenAI API error: ${response.statusText}`);
     }
     
+    console.log('🔧 DEBUG: Parsing JSON response...');
     const data = await response.json();
+    console.log('🔧 DEBUG: OpenAI response data:', data);
     return data.choices[0].message.content;
 }
 
@@ -369,6 +385,7 @@ async function handleSurpriseMe() {
         console.log('🔧 DEBUG: Calling OpenAI with messages:', messages);
         const response = await callOpenAI(messages, 0.5); // Moderate temperature for creative but structured JSON
         console.log('🔧 DEBUG: Got OpenAI response:', response);
+        console.log('🔧 DEBUG: Starting JSON parsing...');
         let jsonStrToParse = response.trim();
         
         // Clean up response if it's wrapped in code blocks

@@ -329,12 +329,91 @@ ON CONFLICT (user_id) DO NOTHING;
 */
 
 -- =====================================================
+-- 8. RECIPE CACHE TABLE
+-- =====================================================
+-- Cache recipes from external APIs to avoid repeated calls and provide AI with recipe data
+CREATE TABLE IF NOT EXISTS recipe_cache (
+    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+    recipe_identifier TEXT UNIQUE NOT NULL, -- Unique ID from external API or generated hash
+    recipe_name TEXT NOT NULL,
+    recipe_data JSONB NOT NULL, -- Full recipe data in Sousie format
+    source TEXT NOT NULL CHECK (source IN ('themealdb', 'ai_generated', 'other')),
+    source_id TEXT, -- Original ID from external API
+    ingredients_hash TEXT, -- Hash of sorted ingredients for quick lookup
+    category TEXT,
+    cuisine TEXT,
+    tags TEXT[],
+    difficulty_level INTEGER CHECK (difficulty_level >= 1 AND difficulty_level <= 5),
+    prep_time_minutes INTEGER,
+    cook_time_minutes INTEGER,
+    servings INTEGER DEFAULT 4,
+    is_active BOOLEAN DEFAULT TRUE, -- Can disable recipes if needed
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    last_accessed TIMESTAMP WITH TIME ZONE DEFAULT NOW() -- Track usage for cache cleanup
+);
+
+-- =====================================================
+-- RLS POLICIES - RECIPE CACHE (PUBLIC READ ACCESS)
+-- =====================================================
+-- Recipe cache is publicly readable but only system can write
+ALTER TABLE recipe_cache ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Recipe cache public read access" ON recipe_cache
+    FOR SELECT USING (is_active = true);
+
+-- Only authenticated users can search (optional - could be fully public)
+CREATE POLICY "Recipe cache search access" ON recipe_cache
+    FOR SELECT USING (true);
+
+-- =====================================================
+-- INDEXES FOR RECIPE CACHE PERFORMANCE
+-- =====================================================
+CREATE INDEX IF NOT EXISTS idx_recipe_cache_identifier ON recipe_cache(recipe_identifier);
+CREATE INDEX IF NOT EXISTS idx_recipe_cache_ingredients_hash ON recipe_cache(ingredients_hash);
+CREATE INDEX IF NOT EXISTS idx_recipe_cache_source ON recipe_cache(source);
+CREATE INDEX IF NOT EXISTS idx_recipe_cache_category ON recipe_cache(category);
+CREATE INDEX IF NOT EXISTS idx_recipe_cache_cuisine ON recipe_cache(cuisine);
+CREATE INDEX IF NOT EXISTS idx_recipe_cache_last_accessed ON recipe_cache(last_accessed DESC);
+CREATE INDEX IF NOT EXISTS idx_recipe_cache_active ON recipe_cache(is_active) WHERE is_active = true;
+
+-- GIN index for JSONB recipe data and tags array
+CREATE INDEX IF NOT EXISTS idx_recipe_cache_data_gin ON recipe_cache USING GIN (recipe_data);
+CREATE INDEX IF NOT EXISTS idx_recipe_cache_tags_gin ON recipe_cache USING GIN (tags);
+
+-- =====================================================
+-- RECIPE CACHE FUNCTIONS
+-- =====================================================
+
+-- Function to update last_accessed timestamp
+CREATE OR REPLACE FUNCTION update_recipe_cache_access(recipe_id UUID)
+RETURNS VOID AS $$
+BEGIN
+    UPDATE recipe_cache 
+    SET last_accessed = NOW() 
+    WHERE id = recipe_id;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Function to generate ingredients hash for fast lookups
+CREATE OR REPLACE FUNCTION generate_ingredients_hash(ingredients TEXT[])
+RETURNS TEXT AS $$
+BEGIN
+    -- Sort ingredients and create hash for consistent lookups
+    RETURN encode(digest(array_to_string(array(SELECT DISTINCT LOWER(trim(unnest(ingredients))) ORDER BY 1), ','), 'sha256'), 'hex');
+END;
+$$ LANGUAGE plpgsql;
+
+-- Add trigger for updated_at on recipe_cache
+CREATE TRIGGER update_recipe_cache_updated_at BEFORE UPDATE ON recipe_cache FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- =====================================================
 -- COMPLETION MESSAGE
 -- =====================================================
 DO $$
 BEGIN
     RAISE NOTICE 'Database setup completed successfully!';
-    RAISE NOTICE 'Created tables: user_profiles, user_liked_recipes, user_menus, user_intents, recipe_ratings, cooking_sessions, user_preferences';
+    RAISE NOTICE 'Created tables: user_profiles, user_liked_recipes, user_menus, user_intents, recipe_ratings, cooking_sessions, user_preferences, recipe_cache';
     RAISE NOTICE 'All RLS policies and indexes have been created.';
     RAISE NOTICE 'Your Sousie app is ready for user authentication and data storage!';
 END $$;

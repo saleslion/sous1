@@ -10,6 +10,7 @@ import {
 } from "./core";
 import { SOUSIE_SYSTEM_INSTRUCTION, RECIPE_GENERATION_INSTRUCTION } from "./prompts";
 import { createMealPairingsFromDB, type MealPairing } from "./recipe-api";
+import { searchCachedRecipes, getRandomCachedRecipes, cacheMultipleRecipes, getRecipesForAIInspiration } from "./recipe-cache";
 
 // OpenAI Configuration
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY || process.env.API_KEY;
@@ -46,40 +47,82 @@ let conversationHistory: Array<{role: string, content: string}> = [];
 
 // System prompts are now imported from prompts.ts
 
-// Hybrid recipe generation: Database first, AI fallback
+// Hybrid recipe generation: Cache first, Database second, AI fallback
 async function generateHybridRecipes(ingredients: string[], dietary: string): Promise<{mealPairings: MealPairing[]}> {
     console.log('🔄 Starting hybrid recipe generation...');
     
-    // Step 1: Try to get recipes from TheMealDB
+    // Step 1: Check cache first for better performance
+    let cachedRecipes: any[] = [];
+    
+    try {
+        if (ingredients.length > 0) {
+            const ingredientList = ingredients[0].split(',').map(ing => ing.trim()).filter(ing => ing);
+            console.log('🗄️ Searching recipe cache for ingredients:', ingredientList);
+            
+            cachedRecipes = await searchCachedRecipes(ingredientList, 6);
+        } else {
+            console.log('🎲 Getting random recipes from cache...');
+            cachedRecipes = await getRandomCachedRecipes(6);
+        }
+        
+        console.log(`📊 Cache returned ${cachedRecipes.length} recipes`);
+        
+        if (cachedRecipes.length >= 4) {
+            // Create meal pairings from cached recipes
+            const pairings: MealPairing[] = [];
+            for (let i = 0; i < Math.min(cachedRecipes.length - 1, 3); i += 2) {
+                const mainRecipe = cachedRecipes[i];
+                const sideRecipe = cachedRecipes[i + 1] || cachedRecipes[0];
+                
+                pairings.push({
+                    mealTitle: `${mainRecipe.cuisine || 'Delicious'} ${mainRecipe.category || 'Recipe'} Experience`,
+                    mainRecipe,
+                    sideRecipe
+                });
+            }
+            
+            console.log('✅ Using cached recipes');
+            return { mealPairings: pairings };
+        }
+        
+    } catch (error) {
+        console.error('❌ Cache search failed:', error);
+    }
+    
+    // Step 2: Try to get recipes from TheMealDB if cache insufficient
     let dbRecipes: MealPairing[] = [];
     
     try {
         if (ingredients.length > 0) {
-            // Parse ingredients from input
             const ingredientList = ingredients[0].split(',').map(ing => ing.trim()).filter(ing => ing);
-            console.log('🔍 Searching database for ingredients:', ingredientList);
+            console.log('🔍 Searching TheMealDB for ingredients:', ingredientList);
             
             dbRecipes = await createMealPairingsFromDB(ingredientList);
         } else {
-            // No specific ingredients, get random recipes
-            console.log('🎲 Getting random recipes from database...');
+            console.log('🎲 Getting random recipes from TheMealDB...');
             dbRecipes = await createMealPairingsFromDB([]);
         }
         
-        console.log(`📊 Database returned ${dbRecipes.length} recipes`);
+        console.log(`📊 TheMealDB returned ${dbRecipes.length} recipes`);
+        
+        // Cache the new recipes from TheMealDB for future use
+        if (dbRecipes.length > 0) {
+            const recipesToCache = dbRecipes.flatMap(pairing => [pairing.mainRecipe, pairing.sideRecipe]);
+            cacheMultipleRecipes(recipesToCache);
+        }
         
         // If we have good database results, use them
         if (dbRecipes.length >= 2) {
-            console.log('✅ Using database recipes');
+            console.log('✅ Using TheMealDB recipes (and caching them)');
             return { mealPairings: dbRecipes };
         }
         
     } catch (error) {
-        console.error('❌ Database search failed:', error);
+        console.error('❌ TheMealDB search failed:', error);
     }
     
-    // Step 2: If database didn't provide enough recipes, use AI
-    console.log('🤖 Falling back to AI generation...');
+    // Step 3: Use AI with recipe inspiration from cache
+    console.log('🤖 Using AI generation with recipe inspiration...');
     
     try {
         const unitInstructions = currentUnitSystem === 'us'
@@ -88,12 +131,31 @@ async function generateHybridRecipes(ingredients: string[], dietary: string): Pr
         
         const recipeObjectJsonFormat = `"name": "Recipe Name", "description": "Desc.", "anecdote": "Story.", "chefTip": "Tip.", "ingredients": ["1 cup flour"], "instructions": ["Preheat."]`;
         
+        // Get existing recipes for AI inspiration
+        let inspirationRecipes: any[] = [];
+        try {
+            const ingredientList = ingredients.length > 0 ? ingredients[0].split(',').map(ing => ing.trim()).filter(ing => ing) : [];
+            inspirationRecipes = await getRecipesForAIInspiration(ingredientList, 10);
+        } catch (error) {
+            console.warn('Could not get recipes for AI inspiration:', error);
+        }
+        
         let promptUserMessage: string;
+        let inspirationContext = '';
+        
+        if (inspirationRecipes.length > 0) {
+            // Create inspiration context from cached recipes
+            const recipeExamples = inspirationRecipes.slice(0, 5).map(recipe => 
+                `${recipe.name} (${recipe.cuisine || 'International'}) - Ingredients: ${recipe.ingredients.slice(0, 3).join(', ')}`
+            ).join('\n');
+            
+            inspirationContext = `\n\nFor inspiration, here are some successful recipes from our database:\n${recipeExamples}\n\nUse these as inspiration but create completely NEW and DIFFERENT recipes. Don't copy them directly.`;
+        }
         
         if (ingredients.length > 0 && ingredients[0].trim()) {
-            promptUserMessage = `Using ingredients: "${ingredients[0]}"${dietary ? ` with dietary preferences: "${dietary}"` : ""}, suggest 3 distinct "mealPairings". Each MUST include: "mainRecipe" object and "sideRecipe" object (could be traditional side or dessert). Use ${unitInstructions}. Both "mainRecipe" and "sideRecipe" objects MUST contain: ${recipeObjectJsonFormat}. All fields are mandatory and non-empty. 'ingredients' and 'instructions' arrays MUST NOT be empty. Each "mealTitle" must be a creative, descriptive name for the meal pairing. KEEP ALL TEXT FIELDS CONCISE (under 200 chars each). Final JSON structure: {"mealPairings": [{"mealTitle": "Creative Meal Name Here", "mainRecipe": {...}, "sideRecipe": {...}}, ...3 pairings]}. RESPOND ONLY WITH VALID, COMPLETE JSON. NO OTHER TEXT.`;
+            promptUserMessage = `Using ingredients: "${ingredients[0]}"${dietary ? ` with dietary preferences: "${dietary}"` : ""}, suggest 3 distinct "mealPairings". Each MUST include: "mainRecipe" object and "sideRecipe" object (could be traditional side or dessert). Use ${unitInstructions}. Both "mainRecipe" and "sideRecipe" objects MUST contain: ${recipeObjectJsonFormat}. All fields are mandatory and non-empty. 'ingredients' and 'instructions' arrays MUST NOT be empty. Each "mealTitle" must be a creative, descriptive name for the meal pairing. KEEP ALL TEXT FIELDS CONCISE (under 200 chars each). Final JSON structure: {"mealPairings": [{"mealTitle": "Creative Meal Name Here", "mainRecipe": {...}, "sideRecipe": {...}}, ...3 pairings]}. RESPOND ONLY WITH VALID, COMPLETE JSON. NO OTHER TEXT.${inspirationContext}`;
         } else {
-            promptUserMessage = `Generate 3 creative surprise "mealPairings"${dietary ? ` that are ${dietary}` : ""}. Each MUST include: "mainRecipe" object and "sideRecipe" object. Use ${unitInstructions}. Both recipe objects MUST contain: ${recipeObjectJsonFormat}. All fields mandatory and non-empty. 'ingredients' and 'instructions' arrays MUST NOT be empty. Each "mealTitle" must be creative and descriptive. KEEP ALL TEXT FIELDS CONCISE (under 200 chars each). Final JSON structure: {"mealPairings": [{"mealTitle": "Creative Meal Name Here", "mainRecipe": {...}, "sideRecipe": {...}}, ...3 pairings]}. RESPOND ONLY WITH VALID, COMPLETE JSON. NO OTHER TEXT.`;
+            promptUserMessage = `Generate 3 creative surprise "mealPairings"${dietary ? ` that are ${dietary}` : ""}. Each MUST include: "mainRecipe" object and "sideRecipe" object. Use ${unitInstructions}. Both recipe objects MUST contain: ${recipeObjectJsonFormat}. All fields mandatory and non-empty. 'ingredients' and 'instructions' arrays MUST NOT be empty. Each "mealTitle" must be creative and descriptive. KEEP ALL TEXT FIELDS CONCISE (under 200 chars each). Final JSON structure: {"mealPairings": [{"mealTitle": "Creative Meal Name Here", "mainRecipe": {...}, "sideRecipe": {...}}, ...3 pairings]}. RESPOND ONLY WITH VALID, COMPLETE JSON. NO OTHER TEXT.${inspirationContext}`;
         }
         
         const messages = [
@@ -117,15 +179,28 @@ async function generateHybridRecipes(ingredients: string[], dietary: string): Pr
         
         const aiRecipeData = JSON.parse(jsonStrToParse);
         
-        // Mark AI recipes with source
+        // Mark AI recipes with source and cache them
         if (aiRecipeData.mealPairings) {
+            const aiRecipesToCache: any[] = [];
             aiRecipeData.mealPairings.forEach((pairing: any) => {
-                if (pairing.mainRecipe) pairing.mainRecipe.source = 'ai_generated';
-                if (pairing.sideRecipe) pairing.sideRecipe.source = 'ai_generated';
+                if (pairing.mainRecipe) {
+                    pairing.mainRecipe.source = 'ai_generated';
+                    aiRecipesToCache.push(pairing.mainRecipe);
+                }
+                if (pairing.sideRecipe) {
+                    pairing.sideRecipe.source = 'ai_generated';
+                    aiRecipesToCache.push(pairing.sideRecipe);
+                }
             });
+            
+            // Cache AI-generated recipes for future use
+            if (aiRecipesToCache.length > 0) {
+                cacheMultipleRecipes(aiRecipesToCache);
+                console.log(`🗄️ Cached ${aiRecipesToCache.length} AI-generated recipes for future use`);
+            }
         }
         
-        console.log('✅ Using AI-generated recipes');
+        console.log('✅ Using AI-generated recipes (and caching them)');
         return aiRecipeData;
         
     } catch (aiError) {

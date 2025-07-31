@@ -148,6 +148,12 @@ export function initializeSupabaseClient() {
     }
     try {
         supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        // Initialize recipe cache
+        import('./recipe-cache').then(({ initializeRecipeCache }) => {
+            initializeRecipeCache(supabaseClient);
+            console.log("Recipe cache initialized");
+        });
         console.log("Supabase client initialized successfully.");
         if (supabaseStatusIndicator) {
             supabaseStatusIndicator.textContent = "DB Ready";

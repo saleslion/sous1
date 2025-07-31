@@ -676,16 +676,21 @@ function initializeChat() {
 function formatChatResponse(message: string): string {
     let formatted = sanitizeHTML(message);
     
-    // Convert numbered lists (1. 2. 3.) to HTML ordered lists
-    formatted = formatted.replace(/^(\d+\.\s*\*\*.*?\*\*.*?)$/gm, '<li><strong>$1</strong></li>');
-    formatted = formatted.replace(/^(\d+\.\s*)(.*?)$/gm, '<li>$2</li>');
+    // Detect if this is a numbered list or bullet point list
+    const hasNumberedList = /^\d+\.\s/m.test(formatted);
+    const hasBulletList = /^[-*]\s/m.test(formatted);
     
-    // Convert bullet points (- or *) to HTML unordered lists  
-    formatted = formatted.replace(/^[-*]\s*\*\*(.*?)\*\*:\s*(.*?)$/gm, '<li><strong>$1</strong>: $2</li>');
-    formatted = formatted.replace(/^[-*]\s*(.*?)$/gm, '<li>$1</li>');
-    
-    // Wrap consecutive <li> elements in proper list tags
-    formatted = formatted.replace(/(<li>.*?<\/li>(\s*<li>.*?<\/li>)*)/gs, '<ul>$1</ul>');
+    if (hasNumberedList && !hasBulletList) {
+        // Only numbered lists - convert to HTML ordered lists
+        formatted = formatted.replace(/^(\d+\.\s*\*\*(.*?)\*\*:?\s*(.*?))$/gm, '<li><strong>$2</strong>: $3</li>');
+        formatted = formatted.replace(/^(\d+\.\s*)(.*?)$/gm, '<li>$2</li>');
+        formatted = formatted.replace(/(<li>.*?<\/li>(\s*<li>.*?<\/li>)*)/gs, '<ol>$1</ol>');
+    } else if (hasBulletList && !hasNumberedList) {
+        // Only bullet points - convert to custom list with pan icons
+        formatted = formatted.replace(/^[-*]\s*\*\*(.*?)\*\*:?\s*(.*?)$/gm, `<li><span class="pan-bullet">${panSVG}</span><strong>$1</strong>: $2</li>`);
+        formatted = formatted.replace(/^[-*]\s*(.*?)$/gm, `<li><span class="pan-bullet">${panSVG}</span>$1</li>`);
+        formatted = formatted.replace(/(<li>.*?<\/li>(\s*<li>.*?<\/li>)*)/gs, '<ul class="pan-list">$1</ul>');
+    }
     
     // Convert **bold** to <strong>
     formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
@@ -696,7 +701,7 @@ function formatChatResponse(message: string): string {
     
     // Clean up empty paragraphs and fix list formatting
     formatted = formatted.replace(/<p><\/p>/g, '');
-    formatted = formatted.replace(/<p>(<ul>.*?<\/ul>)<\/p>/gs, '$1');
+    formatted = formatted.replace(/<p>(<[ou]l.*?<\/[ou]l>)<\/p>/gs, '$1');
     formatted = formatted.replace(/<p>\s*<\/p>/g, '');
     
     // Convert single line breaks to <br> within paragraphs

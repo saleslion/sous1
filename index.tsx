@@ -390,7 +390,7 @@ async function handleSuggestRecipes(ingredientsQuery?: string) {
     const recipeObjectJsonFormat = `"name": "Recipe Name", "description": "Desc.", "anecdote": "Story.", "chefTip": "Tip.", "ingredients": ["1 cup flour"], "instructions": ["Preheat." ]`;
     let dietaryClause = dietaryRestrictions ? `Strictly adhere to dietary restrictions: "${dietaryRestrictions}".` : "";
 
-    const promptUserMessage = `I have: "${ingredientList.join(' and ')}". Suggest 4 distinct "mealPairings". Each MUST include: "mainRecipe" object and "sideRecipe" object (could be traditional side or dessert). Use ${unitInstructions}. ${dietaryClause} Both "mainRecipe" and "sideRecipe" objects MUST contain: ${recipeObjectJsonFormat}. All fields are mandatory and non-empty. 'ingredients' and 'instructions' arrays MUST NOT be empty. Final JSON structure: {"mealPairings": [{"mealTitle": "Opt. Title", "mainRecipe": {...}, "sideRecipe": {...}}, ...4 pairings]}. RESPOND ONLY WITH VALID JSON. NO OTHER TEXT.`;
+    const promptUserMessage = `I have: "${ingredientList.join(' and ')}". Suggest 4 distinct "mealPairings". Each MUST include: "mainRecipe" object and "sideRecipe" object (could be traditional side or dessert). Use ${unitInstructions}. ${dietaryClause} Both "mainRecipe" and "sideRecipe" objects MUST contain: ${recipeObjectJsonFormat}. All fields are mandatory and non-empty. 'ingredients' and 'instructions' arrays MUST NOT be empty. Each "mealTitle" must be a creative, descriptive name for the meal pairing (e.g., "Classic Comfort Dinner", "Mediterranean Feast", "Spicy Asian Night"). Final JSON structure: {"mealPairings": [{"mealTitle": "Creative Meal Name Here", "mainRecipe": {...}, "sideRecipe": {...}}, ...4 pairings]}. RESPOND ONLY WITH VALID JSON. NO OTHER TEXT.`;
 
     try {
         const messages = [
@@ -482,7 +482,7 @@ async function handleSurpriseMe() {
     const unitInstructions = currentUnitSystem === 'us' ? "US Customary units" : "Metric units";
     const recipeObjectJsonFormat = `"name": "Recipe Name", "description": "Desc.", "anecdote": "Story.", "chefTip": "Tip.", "ingredients": ["1 item"], "instructions": ["1 step"]`;
     let dietaryClause = dietaryRestrictions ? `Strictly adhere to: "${dietaryRestrictions}".` : "";
-    const promptUserMessage = `Surprise me with 4 distinct "mealPairings". Each MUST include: "mainRecipe" & "sideRecipe" object (side can be dessert). Use ${unitInstructions}. ${dietaryClause} Both recipes MUST contain: ${recipeObjectJsonFormat}. All fields mandatory & non-empty. 'ingredients' & 'instructions' arrays MUST NOT be empty. JSON: {"mealPairings": [{"mealTitle": "Opt. Title", "mainRecipe": {...}, "sideRecipe": {...}}, ...4 pairings]}. RESPOND ONLY WITH VALID JSON. NO OTHER TEXT.`;
+    const promptUserMessage = `Surprise me with 4 distinct "mealPairings". Each MUST include: "mainRecipe" & "sideRecipe" object (side can be dessert). Use ${unitInstructions}. ${dietaryClause} Both recipes MUST contain: ${recipeObjectJsonFormat}. All fields mandatory & non-empty. 'ingredients' & 'instructions' arrays MUST NOT be empty. Each "mealTitle" must be a creative, descriptive name for the meal pairing (e.g., "Tuscan Sunset", "Cozy Winter Evening", "Tropical Paradise"). JSON: {"mealPairings": [{"mealTitle": "Creative Meal Name Here", "mainRecipe": {...}, "sideRecipe": {...}}, ...4 pairings]}. RESPOND ONLY WITH VALID JSON. NO OTHER TEXT.`;
 
     console.log('🔧 DEBUG: About to call OpenAI for Surprise Me...');
     try {
@@ -801,7 +801,7 @@ async function handleChatMessage(userMessage: string) {
                 : "Metric units (e.g., ml, grams, kg, L)";
             const recipeObjectJsonFormat = `"name": "Recipe Name", "description": "Desc.", "anecdote": "Story.", "chefTip": "Tip.", "ingredients": ["1 cup flour"], "instructions": ["Preheat."]`;
             
-            const promptUserMessage = `Based on this request: "${userMessage}", suggest 3 distinct "mealPairings". Each MUST include: "mainRecipe" object and "sideRecipe" object (could be traditional side or dessert). Use ${unitInstructions}. Both "mainRecipe" and "sideRecipe" objects MUST contain: ${recipeObjectJsonFormat}. All fields are mandatory and non-empty. 'ingredients' and 'instructions' arrays MUST NOT be empty. KEEP ALL TEXT FIELDS CONCISE (under 200 chars each). Final JSON structure: {"mealPairings": [{"mealTitle": "Opt. Title", "mainRecipe": {...}, "sideRecipe": {...}}, ...3 pairings]}. RESPOND ONLY WITH VALID, COMPLETE JSON. NO OTHER TEXT.`;
+            const promptUserMessage = `Based on this request: "${userMessage}", suggest 3 distinct "mealPairings". Each MUST include: "mainRecipe" object and "sideRecipe" object (could be traditional side or dessert). Use ${unitInstructions}. Both "mainRecipe" and "sideRecipe" objects MUST contain: ${recipeObjectJsonFormat}. All fields are mandatory and non-empty. 'ingredients' and 'instructions' arrays MUST NOT be empty. Each "mealTitle" must be a creative, descriptive name for the meal pairing. KEEP ALL TEXT FIELDS CONCISE (under 200 chars each). Final JSON structure: {"mealPairings": [{"mealTitle": "Creative Meal Name Here", "mainRecipe": {...}, "sideRecipe": {...}}, ...3 pairings]}. RESPOND ONLY WITH VALID, COMPLETE JSON. NO OTHER TEXT.`;
             
             const messages = [
                 { role: 'system', content: RECIPE_GENERATION_INSTRUCTION },

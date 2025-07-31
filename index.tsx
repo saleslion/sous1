@@ -181,7 +181,7 @@ async function callOpenAI(messages: any[], temperature: number = 0.7): Promise<s
             model: 'gpt-3.5-turbo',
             messages: messages,
             temperature: temperature,
-            max_tokens: 1000
+            max_tokens: 2000
         })
     });
     
@@ -561,7 +561,7 @@ async function handleChatMessage(userMessage: string) {
                 : "Metric units (e.g., ml, grams, kg, L)";
             const recipeObjectJsonFormat = `"name": "Recipe Name", "description": "Desc.", "anecdote": "Story.", "chefTip": "Tip.", "ingredients": ["1 cup flour"], "instructions": ["Preheat."]`;
             
-            const promptUserMessage = `Based on this request: "${userMessage}", suggest 3 distinct "mealPairings". Each MUST include: "mainRecipe" object and "sideRecipe" object (could be traditional side or dessert). Use ${unitInstructions}. Both "mainRecipe" and "sideRecipe" objects MUST contain: ${recipeObjectJsonFormat}. All fields are mandatory and non-empty. 'ingredients' and 'instructions' arrays MUST NOT be empty. Final JSON structure: {"mealPairings": [{"mealTitle": "Opt. Title", "mainRecipe": {...}, "sideRecipe": {...}}, ...3 pairings]}. RESPOND ONLY WITH VALID JSON. NO OTHER TEXT.`;
+            const promptUserMessage = `Based on this request: "${userMessage}", suggest 3 distinct "mealPairings". Each MUST include: "mainRecipe" object and "sideRecipe" object (could be traditional side or dessert). Use ${unitInstructions}. Both "mainRecipe" and "sideRecipe" objects MUST contain: ${recipeObjectJsonFormat}. All fields are mandatory and non-empty. 'ingredients' and 'instructions' arrays MUST NOT be empty. KEEP ALL TEXT FIELDS CONCISE (under 200 chars each). Final JSON structure: {"mealPairings": [{"mealTitle": "Opt. Title", "mainRecipe": {...}, "sideRecipe": {...}}, ...3 pairings]}. RESPOND ONLY WITH VALID, COMPLETE JSON. NO OTHER TEXT.`;
             
             const messages = [
                 { role: 'system', content: RECIPE_GENERATION_INSTRUCTION },
@@ -577,6 +577,25 @@ async function handleChatMessage(userMessage: string) {
             const match = jsonStrToParse.match(/^```(?:json)?\s*\n?(.*?)\n?\s*```$/s);
             if (match && match[1]) {
                 jsonStrToParse = match[1].trim();
+            }
+            
+            // Additional cleanup for common JSON issues
+            jsonStrToParse = jsonStrToParse
+                .replace(/[\u0000-\u001F\u007F-\u009F]/g, '') // Remove control characters
+                .replace(/,(\s*[}\]])/g, '$1') // Remove trailing commas
+                .trim();
+            
+            // Try to fix unterminated strings by finding the last complete object
+            if (jsonStrToParse.includes('"instructions')) {
+                const lastBraceIndex = jsonStrToParse.lastIndexOf('}');
+                const lastBracketIndex = jsonStrToParse.lastIndexOf(']');
+                if (lastBraceIndex > 0 && lastBracketIndex > lastBraceIndex) {
+                    // Try to close the JSON properly
+                    const truncated = jsonStrToParse.substring(0, lastBracketIndex + 1);
+                    if (truncated.endsWith(']}')) {
+                        jsonStrToParse = truncated;
+                    }
+                }
             }
             
             try {
@@ -636,6 +655,19 @@ async function handleChatMessage(userMessage: string) {
                 
             } catch (parseError) {
                 console.error("Failed to parse recipe JSON, falling back to conversational:", parseError);
+                console.error("Raw JSON string that failed to parse:", jsonStrToParse);
+                console.error("JSON length:", jsonStrToParse.length);
+                
+                // Try to extract partial data if possible
+                try {
+                    // Look for mealPairings array in the response
+                    const mealPairingsMatch = jsonStrToParse.match(/"mealPairings"\s*:\s*\[(.*?)\]/s);
+                    if (mealPairingsMatch) {
+                        console.log("🔧 DEBUG: Found mealPairings in malformed JSON - could implement recovery");
+                    }
+                } catch (recoveryError) {
+                    console.error("JSON recovery also failed:", recoveryError);
+                }
                 // Fall back to conversational response if JSON parsing fails
             }
         }

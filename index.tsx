@@ -95,6 +95,28 @@ function initializeDOMReferences() {
 function setRecipeSuggestionsLoading(loading: boolean, ingredientsForLoadingMessage?: string) {
     console.log('🔧 DEBUG: setRecipeSuggestionsLoading called:', { loading, ingredientsForLoadingMessage });
     isLoadingRecipes = loading;
+    
+    // Show/hide loading overlay
+    const loadingOverlay = document.getElementById('loading-overlay');
+    const loadingMessage = document.getElementById('loading-message');
+    
+    if (loadingOverlay) {
+        if (loading) {
+            // Update loading message
+            if (loadingMessage && ingredientsForLoadingMessage) {
+                if (ingredientsForLoadingMessage === "a delightful surprise") {
+                    loadingMessage.textContent = "Conjuring surprise recipes just for you...";
+                } else {
+                    loadingMessage.textContent = `Creating recipes with ${ingredientsForLoadingMessage}...`;
+                }
+            }
+            // Show overlay
+            loadingOverlay.style.display = 'flex';
+        } else {
+            // Hide overlay
+            loadingOverlay.style.display = 'none';
+        }
+    }
     if (ingredientsInput) ingredientsInput.disabled = loading;
     if (dietaryInput) dietaryInput.disabled = loading;
     if (suggestButton) suggestButton.disabled = loading;

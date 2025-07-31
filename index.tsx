@@ -129,7 +129,7 @@ async function generateHybridRecipes(ingredients: string[], dietary: string): Pr
             ? "US Customary units (e.g., cups, oz, lbs, tsp, tbsp)"
             : "Metric units (e.g., ml, grams, kg, L)";
         
-        const recipeObjectJsonFormat = `"name": "Recipe Name", "description": "Brief appetizing description", "anecdote": "Rich historical story or cultural background about this dish (2-3 sentences)", "chefTip": "Professional cooking tip for best results", "ingredients": ["2 lbs beef tenderloin", "2 tbsp olive oil", "1 tsp salt"], "instructions": ["Step 1: Detailed preparation step with timing", "Step 2: Detailed cooking step with temperature and timing", "Step 3: Final step with serving suggestions"]`;
+        const recipeObjectJsonFormat = `"name": "Recipe Name", "description": "Brief appetizing description", "anecdote": "Rich historical story or cultural background about this dish (2-3 sentences)", "chefTip": "Professional cooking tip for best results", "ingredients": ["2 lbs beef tenderloin, trimmed of excess fat", "2 tbsp extra-virgin olive oil", "1 tsp kosher salt"], "instructions": ["Preparation (15 mins): Remove beef from refrigerator 30-45 minutes before cooking to bring to room temperature (65-70°F). Pat completely dry with paper towels - this is crucial for proper searing. Season generously on all sides.", "Searing (8 mins): Heat a cast-iron or heavy-bottomed skillet over medium-high heat until it just begins to smoke (about 3-4 minutes). Add oil and swirl to coat. Carefully place beef in pan - it should sizzle immediately. Sear without moving for 3-4 minutes until golden-brown crust forms. Flip and sear other side.", "Cooking (12-15 mins): Transfer skillet to preheated 400°F oven. Cook until internal temperature reaches 125°F for medium-rare (use meat thermometer inserted into thickest part). This takes about 12-15 minutes depending on thickness.", "Resting (10 mins): Remove from oven and immediately tent with aluminum foil. Let rest for 10 minutes - internal temperature will rise to 135°F. Slice against the grain into 1/2-inch thick pieces before serving."]`;
         
         // Get existing recipes for AI inspiration
         let inspirationRecipes: any[] = [];
@@ -155,18 +155,23 @@ async function generateHybridRecipes(ingredients: string[], dietary: string): Pr
         if (ingredients.length > 0 && ingredients[0].trim()) {
             promptUserMessage = `Create recipes that FOCUS ON and FEATURE these main ingredients: "${ingredients[0]}"${dietary ? ` with dietary preferences: "${dietary}"` : ""}. The recipes should showcase these ingredients as the star components, not just use them incidentally.
 
-RECIPE REQUIREMENTS:
-- Create DETAILED step-by-step instructions with specific temperatures, timing, and techniques
-- Include RICH anecdotes with historical context, cultural background, or interesting stories about each dish
-- Provide professional chef tips for achieving the best results
-- Use precise measurements and cooking terminology
-- Make instructions clear enough for home cooks to follow successfully
+RECIPE REQUIREMENTS FOR HOME COOKS:
+- Create EXTREMELY DETAILED step-by-step instructions assuming the cook is a beginner
+- Include specific equipment needed (cast-iron skillet, meat thermometer, etc.)
+- Provide exact temperatures, timing, and visual/sensory cues ("until it sizzles", "golden-brown crust forms")
+- Include preparation time estimates for each step
+- Explain WHY each step matters ("this is crucial for proper searing")
+- Add troubleshooting guidance and what to look for
+- Include RICH anecdotes with historical context, cultural background, or interesting stories
+- Provide professional chef tips with specific techniques
+- Use precise measurements with quality specifications ("kosher salt", "extra-virgin olive oil")
+- Make every instruction foolproof for home cooking success
 
 Suggest 3 distinct "mealPairings" where the main recipes center around these ingredients. Each MUST include: "mainRecipe" object and "sideRecipe" object (could be traditional side or dessert). Use ${unitInstructions}. Both "mainRecipe" and "sideRecipe" objects MUST contain: ${recipeObjectJsonFormat}. 
 
 IMPORTANT FIELD REQUIREMENTS:
 - "anecdote": 2-3 sentences about the dish's history, cultural significance, or culinary story
-- "instructions": Detailed steps with temperatures, timing, and professional techniques (minimum 4-6 steps)
+- "instructions": Extremely detailed steps with temperatures, timing, visual cues, and professional techniques (minimum 4-8 comprehensive steps with time estimates)
 - "chefTip": Specific professional advice for perfecting the dish
 - "ingredients": Precise measurements and quality specifications
 
@@ -174,18 +179,23 @@ All fields are mandatory and non-empty. 'ingredients' and 'instructions' arrays 
         } else {
             promptUserMessage = `Generate 3 creative surprise "mealPairings"${dietary ? ` that are ${dietary}` : ""}.
 
-RECIPE REQUIREMENTS:
-- Create DETAILED step-by-step instructions with specific temperatures, timing, and techniques
-- Include RICH anecdotes with historical context, cultural background, or interesting stories about each dish
-- Provide professional chef tips for achieving the best results
-- Use precise measurements and cooking terminology
-- Make instructions clear enough for home cooks to follow successfully
+RECIPE REQUIREMENTS FOR HOME COOKS:
+- Create EXTREMELY DETAILED step-by-step instructions assuming the cook is a beginner
+- Include specific equipment needed (cast-iron skillet, meat thermometer, etc.)
+- Provide exact temperatures, timing, and visual/sensory cues ("until it sizzles", "golden-brown crust forms")
+- Include preparation time estimates for each step
+- Explain WHY each step matters ("this is crucial for proper searing")
+- Add troubleshooting guidance and what to look for
+- Include RICH anecdotes with historical context, cultural background, or interesting stories
+- Provide professional chef tips with specific techniques
+- Use precise measurements with quality specifications ("kosher salt", "extra-virgin olive oil")
+- Make every instruction foolproof for home cooking success
 
 Each MUST include: "mainRecipe" object and "sideRecipe" object. Use ${unitInstructions}. Both recipe objects MUST contain: ${recipeObjectJsonFormat}. 
 
 IMPORTANT FIELD REQUIREMENTS:
 - "anecdote": 2-3 sentences about the dish's history, cultural significance, or culinary story
-- "instructions": Detailed steps with temperatures, timing, and professional techniques (minimum 4-6 steps)
+- "instructions": Extremely detailed steps with temperatures, timing, visual cues, and professional techniques (minimum 4-8 comprehensive steps with time estimates)
 - "chefTip": Specific professional advice for perfecting the dish
 - "ingredients": Precise measurements and quality specifications
 
@@ -1004,7 +1014,7 @@ async function handleChatMessage(userMessage: string) {
             const unitInstructions = currentUnitSystem === 'us'
                 ? "US Customary units (e.g., cups, oz, lbs, tsp, tbsp)"
                 : "Metric units (e.g., ml, grams, kg, L)";
-            const recipeObjectJsonFormat = `"name": "Recipe Name", "description": "Brief appetizing description", "anecdote": "Rich historical story or cultural background about this dish (2-3 sentences)", "chefTip": "Professional cooking tip for best results", "ingredients": ["2 lbs beef tenderloin", "2 tbsp olive oil", "1 tsp salt"], "instructions": ["Step 1: Detailed preparation step with timing", "Step 2: Detailed cooking step with temperature and timing", "Step 3: Final step with serving suggestions"]`;
+            const recipeObjectJsonFormat = `"name": "Recipe Name", "description": "Brief appetizing description", "anecdote": "Rich historical story or cultural background about this dish (2-3 sentences)", "chefTip": "Professional cooking tip for best results", "ingredients": ["2 lbs beef tenderloin, trimmed of excess fat", "2 tbsp extra-virgin olive oil", "1 tsp kosher salt"], "instructions": ["Preparation (15 mins): Remove beef from refrigerator 30-45 minutes before cooking to bring to room temperature (65-70°F). Pat completely dry with paper towels - this is crucial for proper searing. Season generously on all sides.", "Searing (8 mins): Heat a cast-iron or heavy-bottomed skillet over medium-high heat until it just begins to smoke (about 3-4 minutes). Add oil and swirl to coat. Carefully place beef in pan - it should sizzle immediately. Sear without moving for 3-4 minutes until golden-brown crust forms. Flip and sear other side.", "Cooking (12-15 mins): Transfer skillet to preheated 400°F oven. Cook until internal temperature reaches 125°F for medium-rare (use meat thermometer inserted into thickest part). This takes about 12-15 minutes depending on thickness.", "Resting (10 mins): Remove from oven and immediately tent with aluminum foil. Let rest for 10 minutes - internal temperature will rise to 135°F. Slice against the grain into 1/2-inch thick pieces before serving."]`;
             
             // Extract conversation context to understand what the user was discussing
             const recentConversation = conversationHistory.slice(-6); // Last 3 exchanges
@@ -1020,18 +1030,23 @@ async function handleChatMessage(userMessage: string) {
             
             const promptUserMessage = `Based on this request: "${userMessage}", create recipes that directly address what the user is asking for. If they mention specific ingredients, make those the STAR of the recipes. If they want to learn how to cook something (like "rotisserie chicken"), provide step-by-step recipes for making that dish from scratch. 
 
-RECIPE REQUIREMENTS:
-- Create DETAILED step-by-step instructions with specific temperatures, timing, and techniques
-- Include RICH anecdotes with historical context, cultural background, or interesting stories about each dish
-- Provide professional chef tips for achieving the best results
-- Use precise measurements and cooking terminology
-- Make instructions clear enough for home cooks to follow successfully
+RECIPE REQUIREMENTS FOR HOME COOKS:
+- Create EXTREMELY DETAILED step-by-step instructions assuming the cook is a beginner
+- Include specific equipment needed (cast-iron skillet, meat thermometer, etc.)
+- Provide exact temperatures, timing, and visual/sensory cues ("until it sizzles", "golden-brown crust forms")
+- Include preparation time estimates for each step
+- Explain WHY each step matters ("this is crucial for proper searing")
+- Add troubleshooting guidance and what to look for
+- Include RICH anecdotes with historical context, cultural background, or interesting stories
+- Provide professional chef tips with specific techniques
+- Use precise measurements with quality specifications ("kosher salt", "extra-virgin olive oil")
+- Make every instruction foolproof for home cooking success
 
 Suggest 3 distinct "mealPairings" that fully satisfy their request. Each MUST include: "mainRecipe" object and "sideRecipe" object (could be traditional side or dessert). Use ${unitInstructions}. Both "mainRecipe" and "sideRecipe" objects MUST contain: ${recipeObjectJsonFormat}. 
 
 IMPORTANT FIELD REQUIREMENTS:
 - "anecdote": 2-3 sentences about the dish's history, cultural significance, or culinary story
-- "instructions": Detailed steps with temperatures, timing, and professional techniques (minimum 4-6 steps)
+- "instructions": Extremely detailed steps with temperatures, timing, visual cues, and professional techniques (minimum 4-8 comprehensive steps with time estimates)
 - "chefTip": Specific professional advice for perfecting the dish
 - "ingredients": Precise measurements and quality specifications
 

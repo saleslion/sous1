@@ -2,7 +2,7 @@ User-agent: *
 Allow: /
 
 # SEO optimization
-Sitemap: https://sousie.vercel.app/sitemap.xml
+Sitemap: https://sousie.fun/sitemap.xml
 
 # Block access to sensitive areas
 Disallow: /dist/

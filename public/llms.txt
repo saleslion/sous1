@@ -35,7 +35,7 @@ Sousie is an intelligent cooking assistant powered by OpenAI's GPT technology. B
 cooking assistant, AI recipes, meal planning, Dutch design, recipe generator, cooking chat, Albert Heijn style, personalized recipes
 
 ## Contact
-For questions about this AI cooking assistant, please visit the application at https://sousie.vercel.app
+For questions about this AI cooking assistant, please visit the application at https://sousie.fun
 
 ## Last Updated
 2025-07-31

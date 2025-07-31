@@ -972,7 +972,19 @@ async function handleChatMessage(userMessage: string) {
                 : "Metric units (e.g., ml, grams, kg, L)";
             const recipeObjectJsonFormat = `"name": "Recipe Name", "description": "Desc.", "anecdote": "Story.", "chefTip": "Tip.", "ingredients": ["1 cup flour"], "instructions": ["Preheat."]`;
             
-            const promptUserMessage = `Based on this request: "${userMessage}", create recipes that directly address what the user is asking for. If they mention specific ingredients, make those the STAR of the recipes. If they want to learn how to cook something (like "rotisserie chicken"), provide step-by-step recipes for making that dish from scratch. Suggest 3 distinct "mealPairings" that fully satisfy their request. Each MUST include: "mainRecipe" object and "sideRecipe" object (could be traditional side or dessert). Use ${unitInstructions}. Both "mainRecipe" and "sideRecipe" objects MUST contain: ${recipeObjectJsonFormat}. All fields are mandatory and non-empty. 'ingredients' and 'instructions' arrays MUST NOT be empty. Each "mealTitle" must be a creative, descriptive name for the meal pairing. KEEP ALL TEXT FIELDS CONCISE (under 200 chars each). Final JSON structure: {"mealPairings": [{"mealTitle": "Creative Meal Name Here", "mainRecipe": {...}, "sideRecipe": {...}}, ...3 pairings]}. RESPOND ONLY WITH VALID, COMPLETE JSON. NO OTHER TEXT.`;
+            // Extract conversation context to understand what the user was discussing
+            const recentConversation = conversationHistory.slice(-6); // Last 3 exchanges
+            let conversationContext = '';
+            
+            if (recentConversation.length > 0) {
+                const contextMessages = recentConversation
+                    .filter(msg => msg.role === 'user' || msg.role === 'assistant')
+                    .map(msg => `${msg.role}: ${msg.content}`)
+                    .join('\n');
+                conversationContext = `\n\nCONVERSATION CONTEXT:\n${contextMessages}\n\nIMPORTANT: Based on our conversation above, if the user was asking about a specific ingredient, dish, or cooking method, make sure the recipes FOCUS ON that topic. For example, if they asked about "tenderloin" and now want "recipes", give them tenderloin recipes.`;
+            }
+            
+            const promptUserMessage = `Based on this request: "${userMessage}", create recipes that directly address what the user is asking for. If they mention specific ingredients, make those the STAR of the recipes. If they want to learn how to cook something (like "rotisserie chicken"), provide step-by-step recipes for making that dish from scratch. Suggest 3 distinct "mealPairings" that fully satisfy their request. Each MUST include: "mainRecipe" object and "sideRecipe" object (could be traditional side or dessert). Use ${unitInstructions}. Both "mainRecipe" and "sideRecipe" objects MUST contain: ${recipeObjectJsonFormat}. All fields are mandatory and non-empty. 'ingredients' and 'instructions' arrays MUST NOT be empty. Each "mealTitle" must be a creative, descriptive name for the meal pairing. KEEP ALL TEXT FIELDS CONCISE (under 200 chars each). Final JSON structure: {"mealPairings": [{"mealTitle": "Creative Meal Name Here", "mainRecipe": {...}, "sideRecipe": {...}}, ...3 pairings]}. RESPOND ONLY WITH VALID, COMPLETE JSON. NO OTHER TEXT.${conversationContext}`;
             
             const messages = [
                 { role: 'system', content: RECIPE_GENERATION_INSTRUCTION },

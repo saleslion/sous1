@@ -1,0 +1,41 @@
+# Sousie - AI Cooking Assistant
+
+## About
+Sousie is an intelligent cooking assistant powered by OpenAI's GPT technology. Built with modern web technologies and featuring a clean Albert Heijn-inspired Dutch design.
+
+## Features
+- **Recipe Generation**: Create personalized recipes based on available ingredients
+- **Surprise Me**: Get random recipe suggestions for culinary inspiration  
+- **Chat Interface**: Natural language conversation about cooking and recipes
+- **Menu Planning**: Generate weekly meal plans (coming soon)
+- **Favorites**: Save and organize favorite recipes (coming soon)
+- **Unit Conversion**: Toggle between US and metric measurements
+- **Dutch Design**: Clean, minimalist interface inspired by Albert Heijn branding
+
+## Technology Stack
+- Frontend: HTML5, CSS3, TypeScript
+- AI: OpenAI GPT-3.5-turbo API
+- Database: Supabase (PostgreSQL)
+- Build: esbuild
+- Deployment: Vercel
+- Authentication: Supabase Auth
+
+## API Endpoints
+- Recipe generation via OpenAI API
+- User management via Supabase
+- Real-time data synchronization
+
+## Target Audience
+- Home cooks looking for recipe inspiration
+- Food enthusiasts wanting personalized meal suggestions
+- Busy individuals needing quick meal planning solutions
+- Dutch users who appreciate clean, functional design
+
+## SEO Keywords
+cooking assistant, AI recipes, meal planning, Dutch design, recipe generator, cooking chat, Albert Heijn style, personalized recipes
+
+## Contact
+For questions about this AI cooking assistant, please visit the application at https://sousie.vercel.app
+
+## Last Updated
+2025-07-31

@@ -1,0 +1,5 @@
+Contact: https://sousie.vercel.app
+Expires: 2026-07-31T00:00:00.000Z
+Acknowledgments: https://sousie.vercel.app
+Preferred-Languages: en, nl
+Canonical: https://sousie.vercel.app/.well-known/security.txt

@@ -378,7 +378,11 @@ function handleRecipePageStartOver() {
 }
 
 async function handleRecipePageUnitChange(newSystem: 'us' | 'metric') {
-    if (isLoadingRecipes || currentUnitSystem === newSystem) return;
+    console.log('🔧 DEBUG: handleRecipePageUnitChange called with:', newSystem, 'current:', currentUnitSystem);
+    if (isLoadingRecipes || currentUnitSystem === newSystem) {
+        console.log('🔧 DEBUG: Unit change skipped - loading:', isLoadingRecipes, 'same system:', currentUnitSystem === newSystem);
+        return;
+    }
     const oldSystem = currentUnitSystem;
     updateUnitSystem(newSystem); // Updates global state and button appearance
 
@@ -861,7 +865,20 @@ document.addEventListener('DOMContentLoaded', () => {
     // Unit change event listeners
     const coreUsUnitsButton = document.getElementById('us-units-button') as HTMLButtonElement | null;
     const coreMetricUnitsButton = document.getElementById('metric-units-button') as HTMLButtonElement | null;
-    if(coreUsUnitsButton) coreUsUnitsButton.addEventListener('click', () => handleRecipePageUnitChange('us'));
-    if(coreMetricUnitsButton) coreMetricUnitsButton.addEventListener('click', () => handleRecipePageUnitChange('metric'));
+    
+    console.log('🔧 DEBUG: Unit buttons found:', { usButton: !!coreUsUnitsButton, metricButton: !!coreMetricUnitsButton });
+    
+    if(coreUsUnitsButton) {
+        coreUsUnitsButton.addEventListener('click', () => {
+            console.log('🔧 DEBUG: US button clicked');
+            handleRecipePageUnitChange('us');
+        });
+    }
+    if(coreMetricUnitsButton) {
+        coreMetricUnitsButton.addEventListener('click', () => {
+            console.log('🔧 DEBUG: Metric button clicked');
+            handleRecipePageUnitChange('metric');
+        });
+    }
 
 });

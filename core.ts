@@ -317,6 +317,7 @@ export function openModal(modal: HTMLElement | null) {
     if (messageEl) clearModalMessage(messageEl);
     modal.classList.add('is-open');
     modal.setAttribute('aria-hidden', 'false');
+    modal.style.display = 'flex'; // Show the modal
     const firstInput = modal.querySelector('input');
     firstInput?.focus();
 }
@@ -325,6 +326,7 @@ export function closeModal(modal: HTMLElement | null) {
     if (!modal) return;
     modal.classList.remove('is-open');
     modal.setAttribute('aria-hidden', 'true');
+    modal.style.display = 'none'; // Hide the modal
 }
 
 export function setupModalEventListeners() {

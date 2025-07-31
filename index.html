@@ -16,25 +16,47 @@
       }
       
       :root {
-        --primary: #ff6b35;
-        --primary-dark: #e55a2e;
-        --secondary: #2c3e50;
-        --background: #f8fafc;
-        --surface: #ffffff;
-        --text: #1a202c;
-        --text-muted: #718096;
-        --border: #e2e8f0;
-        --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-        --radius: 12px;
+        /* De Stijl Primary Colors */
+        --dutch-red: #DC143C;
+        --dutch-blue: #003DA5;
+        --dutch-yellow: #FFD700;
+        
+        /* Modern Dutch Neutrals */
+        --dutch-white: #FEFEFE;
+        --dutch-light-gray: #F5F5F5;
+        --dutch-gray: #E8E8E8;
+        --dutch-dark-gray: #666666;
+        --dutch-black: #1A1A1A;
+        
+        /* Application Colors */
+        --primary: var(--dutch-red);
+        --primary-dark: #B91C3C;
+        --secondary: var(--dutch-blue);
+        --accent: var(--dutch-yellow);
+        --background: var(--dutch-light-gray);
+        --surface: var(--dutch-white);
+        --text: var(--dutch-black);
+        --text-muted: var(--dutch-dark-gray);
+        --border: var(--dutch-gray);
+        
+        /* Dutch-inspired shadows - more subtle */
+        --shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+        --shadow-lg: 0 4px 8px rgba(0, 0, 0, 0.12);
+        
+        /* Geometric grid-based radius */
+        --radius: 4px;
+        --radius-lg: 8px;
       }
       
       body {
-        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        /* Dutch-inspired typography - clean, geometric sans-serif */
+        font-family: 'Inter', 'Helvetica Neue', 'Arial', sans-serif;
         background: var(--background);
         color: var(--text);
-        line-height: 1.6;
-        font-size: 14px;
+        line-height: 1.5; /* More restrained line-height */
+        font-size: 15px; /* Slightly larger for better readability */
+        font-weight: 400;
+        letter-spacing: -0.01em; /* Subtle tighter spacing */
       }
       
       .app-container {
@@ -43,40 +65,42 @@
         overflow: hidden;
       }
       
-      /* Sidebar */
+      /* Sidebar - Dutch Minimalism */
       .sidebar {
         width: 280px;
         background: var(--surface);
-        border-right: 1px solid var(--border);
+        border-right: 2px solid var(--border); /* Stronger border for grid definition */
         display: flex;
         flex-direction: column;
-        box-shadow: var(--shadow);
+        box-shadow: none; /* Remove shadow for cleaner look */
       }
       
       .logo {
-        padding: 24px;
-        border-bottom: 1px solid var(--border);
+        padding: 32px 24px; /* More generous vertical padding */
+        border-bottom: 2px solid var(--border);
         display: flex;
         align-items: center;
-        gap: 12px;
+        gap: 16px;
       }
       
       .logo-icon {
-        width: 40px;
-        height: 40px;
-        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-        border-radius: 10px;
+        width: 48px;
+        height: 48px;
+        background: var(--primary); /* Solid De Stijl red */
+        border-radius: 0; /* Pure geometric square */
         display: flex;
         align-items: center;
         justify-content: center;
-        color: white;
-        font-size: 20px;
+        color: var(--dutch-white);
+        font-size: 24px;
+        font-weight: 600;
       }
       
       .logo-text {
-        font-size: 24px;
-        font-weight: 700;
+        font-size: 28px;
+        font-weight: 600; /* Less heavy, more refined */
         color: var(--text);
+        letter-spacing: -0.02em;
       }
       
       .nav-menu {
@@ -87,24 +111,29 @@
       .nav-item {
         display: flex;
         align-items: center;
-        gap: 12px;
-        padding: 12px 16px;
-        margin-bottom: 4px;
-        border-radius: 8px;
+        gap: 16px;
+        padding: 16px 20px; /* More generous padding */
+        margin-bottom: 2px;
+        border-radius: 0; /* Remove rounded corners for geometric look */
         cursor: pointer;
-        transition: all 0.2s;
+        transition: all 0.15s ease; /* Shorter, snappier transition */
         color: var(--text-muted);
         font-weight: 500;
+        font-size: 15px;
+        border-left: 4px solid transparent; /* Add left border for active state */
       }
       
       .nav-item:hover {
-        background: #f1f5f9;
+        background: var(--dutch-light-gray);
         color: var(--text);
+        border-left-color: var(--dutch-gray);
       }
       
       .nav-item.active {
-        background: var(--primary);
-        color: white;
+        background: var(--dutch-light-gray);
+        color: var(--primary);
+        border-left-color: var(--primary);
+        font-weight: 600;
       }
       
       .nav-item i {
@@ -122,17 +151,19 @@
       
       .header {
         background: var(--surface);
-        border-bottom: 1px solid var(--border);
-        padding: 16px 24px;
+        border-bottom: 3px solid var(--border); /* Stronger grid definition */
+        padding: 24px 32px; /* More generous padding */
         display: flex;
         align-items: center;
         justify-content: space-between;
       }
       
       .page-title {
-        font-size: 24px;
+        font-size: 28px;
         font-weight: 600;
         color: var(--text);
+        letter-spacing: -0.02em;
+        text-transform: none; /* Keep natural casing for readability */
       }
       
       .header-actions {
@@ -142,35 +173,49 @@
       }
       
       .btn {
-        padding: 8px 16px;
-        border-radius: 8px;
+        padding: 12px 20px; /* More generous padding */
+        border-radius: 0; /* Pure geometric form */
         border: none;
-        font-weight: 500;
+        font-weight: 600;
         cursor: pointer;
-        transition: all 0.2s;
+        transition: all 0.15s ease;
         display: inline-flex;
         align-items: center;
-        gap: 8px;
+        gap: 10px;
+        font-size: 14px;
+        letter-spacing: 0.01em;
+        text-transform: uppercase; /* Dutch modernist typography */
+        font-size: 13px;
       }
       
       .btn-primary {
         background: var(--primary);
-        color: white;
+        color: var(--dutch-white);
+        border: 2px solid var(--primary);
       }
       
       .btn-primary:hover {
         background: var(--primary-dark);
+        border-color: var(--primary-dark);
+        transform: translateY(-1px); /* Subtle lift effect */
       }
       
       .btn-outline {
         background: transparent;
-        color: var(--text-muted);
-        border: 1px solid var(--border);
+        color: var(--text);
+        border: 2px solid var(--border);
       }
       
       .btn-outline:hover {
-        background: var(--background);
+        background: var(--dutch-light-gray);
+        border-color: var(--dutch-dark-gray);
         color: var(--text);
+      }
+      
+      .btn-outline.active {
+        background: var(--secondary);
+        color: var(--dutch-white);
+        border-color: var(--secondary);
       }
       
       /* Content Area */
@@ -207,27 +252,27 @@
       }
       
       .message {
-        max-width: 80%;
-        padding: 12px 16px;
-        border-radius: 16px;
-        font-size: 14px;
+        max-width: 75%;
+        padding: 16px 20px;
+        border-radius: 0; /* Pure geometric form */
+        font-size: 15px;
         line-height: 1.5;
       }
       
       .message.user {
         background: var(--primary);
-        color: white;
+        color: var(--dutch-white);
         align-self: flex-end;
-        border-bottom-right-radius: 4px;
+        border-left: 4px solid var(--primary-dark); /* Geometric accent */
       }
       
       .message.assistant {
         background: var(--surface);
         color: var(--text);
         align-self: flex-start;
-        border: 1px solid var(--border);
-        border-bottom-left-radius: 4px;
-        box-shadow: var(--shadow);
+        border: 2px solid var(--border);
+        border-left: 4px solid var(--secondary); /* Blue accent for assistant */
+        box-shadow: none; /* Remove shadow for cleaner look */
       }
       
       .chat-input-area {
@@ -244,34 +289,40 @@
       
       .chat-input {
         flex: 1;
-        padding: 12px 16px;
-        border: 1px solid var(--border);
-        border-radius: 24px;
-        font-size: 14px;
+        padding: 16px 20px;
+        border: 2px solid var(--border);
+        border-radius: 0; /* Geometric rectangular form */
+        font-size: 15px;
         outline: none;
-        transition: border-color 0.2s;
+        transition: border-color 0.15s ease;
+        font-family: inherit;
+        background: var(--surface);
       }
       
       .chat-input:focus {
         border-color: var(--primary);
+        background: var(--dutch-white);
       }
       
       .send-btn {
-        width: 48px;
-        height: 48px;
-        border-radius: 50%;
+        width: 52px;
+        height: 52px;
+        border-radius: 0; /* Square geometric form */
         background: var(--primary);
-        color: white;
-        border: none;
+        color: var(--dutch-white);
+        border: 2px solid var(--primary);
         cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;
-        transition: background 0.2s;
+        transition: all 0.15s ease;
+        font-size: 16px;
       }
       
       .send-btn:hover {
         background: var(--primary-dark);
+        border-color: var(--primary-dark);
+        transform: translateY(-1px);
       }
       
       .suggested-questions {
@@ -409,16 +460,18 @@
       
       .recipe-card {
         background: var(--surface);
-        border: 1px solid var(--border);
-        border-radius: var(--radius);
-        box-shadow: var(--shadow);
+        border: 3px solid var(--border);
+        border-radius: 0; /* Pure geometric form */
+        box-shadow: none; /* Remove shadow for cleaner look */
         position: relative;
-        transition: transform 0.2s, box-shadow 0.2s;
+        transition: all 0.15s ease;
+        border-top: 6px solid var(--accent); /* Yellow accent strip */
       }
       
       .recipe-card:hover {
+        border-color: var(--dutch-dark-gray);
+        border-top-color: var(--primary); /* Change accent to red on hover */
         transform: translateY(-2px);
-        box-shadow: var(--shadow-lg);
       }
       
       .recipe-summary {
@@ -467,22 +520,26 @@
       }
       
       .expand-toggle {
-        background: var(--primary);
-        color: white;
-        border: none;
-        padding: 8px 16px;
-        border-radius: 6px;
+        background: var(--secondary);
+        color: var(--dutch-white);
+        border: 2px solid var(--secondary);
+        padding: 10px 16px;
+        border-radius: 0; /* Geometric rectangular form */
         cursor: pointer;
         display: flex;
         align-items: center;
         gap: 8px;
-        font-size: 13px;
-        font-weight: 500;
-        transition: background 0.2s;
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        transition: all 0.15s ease;
       }
       
       .expand-toggle:hover {
-        background: var(--primary-dark);
+        background: var(--dutch-blue);
+        border-color: var(--dutch-blue);
+        transform: translateY(-1px);
       }
       
       .expand-toggle svg {

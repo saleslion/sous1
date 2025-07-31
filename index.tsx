@@ -194,8 +194,19 @@ async function callOpenAI(messages: any[], temperature: number = 0.7): Promise<s
 }
 
 async function handleSuggestRecipes(ingredientsQuery?: string) {
-    console.log("🔧 DEBUG: handleSuggestRecipes called");
-    if (!OPENAI_API_KEY || isLoadingRecipes || !ingredientsInput || !dietaryInput) return;
+    console.log("🔧 DEBUG: ===== HANDLE SUGGEST RECIPES CALLED =====");
+    console.log("🔧 DEBUG: Function parameters:", {
+        ingredientsQuery,
+        OPENAI_API_KEY: !!OPENAI_API_KEY,
+        isLoadingRecipes,
+        ingredientsInput: !!ingredientsInput,
+        dietaryInput: !!dietaryInput
+    });
+    
+    if (!OPENAI_API_KEY || isLoadingRecipes || !ingredientsInput || !dietaryInput) {
+        console.error("🔧 DEBUG: Early return - missing dependencies");
+        return;
+    }
     const ingredients = ingredientsQuery || ingredientsInput.value.trim();
     const dietaryRestrictions = dietaryInput.value.trim();
 
@@ -796,12 +807,18 @@ function clearChatHistory() {
 
 // View-specific initialization functions
 function initializeRecipeFinderButtons() {
-    console.log('🔧 DEBUG: Initializing Recipe Finder buttons');
+    console.log('🔧 DEBUG: ===== INITIALIZING RECIPE FINDER BUTTONS =====');
     
     // Refresh DOM references for Recipe Finder view
     ingredientsInput = document.getElementById('ingredients-input') as HTMLInputElement;
     dietaryInput = document.getElementById('dietary-input') as HTMLInputElement;
     resultsContainer = document.getElementById('results-container') as HTMLDivElement;
+    
+    console.log('🔧 DEBUG: DOM elements after refresh:', {
+        ingredientsInput,
+        dietaryInput,
+        resultsContainer
+    });
     
     const suggestBtn = document.getElementById('suggest-button') as HTMLButtonElement;
     const surpriseBtn = document.getElementById('surprise-button') as HTMLButtonElement;
@@ -818,21 +835,31 @@ function initializeRecipeFinderButtons() {
     
     // Remove existing listeners by cloning elements (clean approach)
     if (suggestBtn) {
+        console.log('🔧 DEBUG: Setting up Suggest Recipes button');
         const newSuggestBtn = suggestBtn.cloneNode(true) as HTMLButtonElement;
         suggestBtn.parentNode?.replaceChild(newSuggestBtn, suggestBtn);
-        newSuggestBtn.addEventListener('click', () => {
-            console.log('🔧 DEBUG: Suggest Recipes clicked');
+        newSuggestBtn.addEventListener('click', (event) => {
+            event.preventDefault();
+            console.log('🔧 DEBUG: ===== SUGGEST RECIPES BUTTON CLICKED =====');
             handleSuggestRecipes();
         });
+        console.log('🔧 DEBUG: Suggest Recipes event listener attached');
+    } else {
+        console.error('🔧 DEBUG: Suggest button NOT FOUND!');
     }
     
     if (surpriseBtn) {
+        console.log('🔧 DEBUG: Setting up Surprise Me button');
         const newSurpriseBtn = surpriseBtn.cloneNode(true) as HTMLButtonElement;
         surpriseBtn.parentNode?.replaceChild(newSurpriseBtn, surpriseBtn);
-        newSurpriseBtn.addEventListener('click', () => {
-            console.log('🔧 DEBUG: Surprise Me clicked');
+        newSurpriseBtn.addEventListener('click', (event) => {
+            event.preventDefault();
+            console.log('🔧 DEBUG: ===== SURPRISE ME BUTTON CLICKED =====');
             handleSurpriseMe();
         });
+        console.log('🔧 DEBUG: Surprise Me event listener attached');
+    } else {
+        console.error('🔧 DEBUG: Surprise button NOT FOUND!');
     }
     
     if (startOverBtn) {
@@ -865,18 +892,24 @@ function initializeRecipeFinderButtons() {
 }
 
 function initializeMenuPlannerButtons() {
-    console.log('🔧 DEBUG: Initializing Menu Planner buttons');
+    console.log('🔧 DEBUG: ===== INITIALIZING MENU PLANNER BUTTONS =====');
     
     const weeklyMenuBtn = document.getElementById('generate-weekly-menu-button') as HTMLButtonElement;
     console.log('🔧 DEBUG: Weekly menu button found:', !!weeklyMenuBtn);
+    console.log('🔧 DEBUG: Weekly menu button element:', weeklyMenuBtn);
     
     if (weeklyMenuBtn) {
+        console.log('🔧 DEBUG: Setting up Weekly Menu button');
         const newWeeklyMenuBtn = weeklyMenuBtn.cloneNode(true) as HTMLButtonElement;
         weeklyMenuBtn.parentNode?.replaceChild(newWeeklyMenuBtn, weeklyMenuBtn);
-        newWeeklyMenuBtn.addEventListener('click', () => {
-            console.log('🔧 DEBUG: Generate Weekly Menu clicked');
+        newWeeklyMenuBtn.addEventListener('click', (event) => {
+            event.preventDefault();
+            console.log('🔧 DEBUG: ===== WEEKLY MENU BUTTON CLICKED =====');
             handleGenerateWeeklyMenu();
         });
+        console.log('🔧 DEBUG: Weekly Menu event listener attached');
+    } else {
+        console.error('🔧 DEBUG: Weekly Menu button NOT FOUND!');
     }
 }
 
@@ -917,13 +950,18 @@ function initializeNavigation() {
                 targetViewEl.classList.add('active');
                 
                 // Initialize view-specific functionality
+                console.log('🔧 DEBUG: Initializing view-specific functionality for:', targetView);
                 if (targetView === 'chat') {
+                    console.log('🔧 DEBUG: Initializing chat view');
                     initializeChat();
                 } else if (targetView === 'recipes') {
+                    console.log('🔧 DEBUG: Initializing recipes view');
                     initializeRecipeFinderButtons();
                 } else if (targetView === 'menu') {
+                    console.log('🔧 DEBUG: Initializing menu view');
                     initializeMenuPlannerButtons();
                 } else if (targetView === 'favorites') {
+                    console.log('🔧 DEBUG: Initializing favorites view');
                     initializeFavoritesButtons();
                 }
             }

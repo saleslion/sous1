@@ -638,11 +638,20 @@ export async function handleUnlikeRecipe(recipeIdentifier: string) {
 
 // --- Unit System ---
 export function updateUnitSystem(newSystem: 'us' | 'metric') {
+    console.log('🔧 DEBUG: updateUnitSystem called with:', newSystem);
     currentUnitSystem = newSystem;
-    if(usUnitsButton) usUnitsButton.classList.toggle('active', newSystem === 'us');
-    if(usUnitsButton) usUnitsButton.setAttribute('aria-pressed', String(newSystem === 'us'));
-    if(metricUnitsButton) metricUnitsButton.classList.toggle('active', newSystem === 'metric');
-    if(metricUnitsButton) metricUnitsButton.setAttribute('aria-pressed', String(newSystem === 'metric'));
+    console.log('🔧 DEBUG: Unit buttons available:', { usUnitsButton: !!usUnitsButton, metricUnitsButton: !!metricUnitsButton });
+    
+    if(usUnitsButton) {
+        usUnitsButton.classList.toggle('active', newSystem === 'us');
+        usUnitsButton.setAttribute('aria-pressed', String(newSystem === 'us'));
+        console.log('🔧 DEBUG: US button updated, active:', newSystem === 'us');
+    }
+    if(metricUnitsButton) {
+        metricUnitsButton.classList.toggle('active', newSystem === 'metric');
+        metricUnitsButton.setAttribute('aria-pressed', String(newSystem === 'metric'));
+        console.log('🔧 DEBUG: Metric button updated, active:', newSystem === 'metric');
+    }
     // Page-specific scripts will handle re-rendering content if needed
 }
 

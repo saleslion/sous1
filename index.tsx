@@ -127,12 +127,19 @@ function setRecipeSuggestionsLoading(loading: boolean, ingredientsForLoadingMess
 }
 
 function displayRecipeError(message: string) {
+    console.log('🔧 DEBUG: displayRecipeError called with message:', message);
+    console.log('🔧 DEBUG: resultsContainer:', resultsContainer);
+    
     if (resultsContainer) {
+        console.log('🔧 DEBUG: Displaying error in results container');
         resultsContainer.innerHTML = '';
         const errorElement = document.createElement('div');
         errorElement.className = 'message error-message';
         errorElement.textContent = message; // sanitizeHTML(message) if message could be unsafe
         resultsContainer.appendChild(errorElement);
+        console.log('🔧 DEBUG: Error element added to DOM');
+    } else {
+        console.error('🔧 DEBUG: No results container found!');
     }
     lastUserIngredients = null;
     lastUserDietary = null;
@@ -209,11 +216,21 @@ async function handleSuggestRecipes(ingredientsQuery?: string) {
     }
     const ingredients = ingredientsQuery || ingredientsInput.value.trim();
     const dietaryRestrictions = dietaryInput.value.trim();
+    
+    console.log('🔧 DEBUG: Input values:', {
+        ingredients,
+        dietaryRestrictions,
+        ingredientsInputValue: ingredientsInput.value,
+        dietaryInputValue: dietaryInput.value
+    });
 
     if (!ingredients) {
+        console.log('🔧 DEBUG: No ingredients provided, showing error');
         displayRecipeError("Sousie needs some ingredients to work her magic! Please enter some.");
         return;
     }
+    
+    console.log('🔧 DEBUG: Ingredients check passed, continuing...');
     
     // Track recipe search intent
     const searchData = {
@@ -304,7 +321,17 @@ async function handleSuggestRecipes(ingredientsQuery?: string) {
 }
 
 async function handleSurpriseMe() {
-    if (!OPENAI_API_KEY || isLoadingRecipes || !dietaryInput) return;
+    console.log("🔧 DEBUG: ===== HANDLE SURPRISE ME CALLED =====");
+    console.log("🔧 DEBUG: Surprise Me parameters:", {
+        OPENAI_API_KEY: !!OPENAI_API_KEY,
+        isLoadingRecipes,
+        dietaryInput: !!dietaryInput
+    });
+    
+    if (!OPENAI_API_KEY || isLoadingRecipes || !dietaryInput) {
+        console.error("🔧 DEBUG: Surprise Me early return - missing dependencies");
+        return;
+    }
     const dietaryRestrictions = dietaryInput.value.trim();
     setRecipeSuggestionsLoading(true, "a delightful surprise");
     if (!isUnitUpdatingRecipes) {

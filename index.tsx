@@ -672,6 +672,39 @@ function initializeChat() {
     }
 }
 
+// Format AI response text into readable HTML with proper formatting
+function formatChatResponse(message: string): string {
+    let formatted = sanitizeHTML(message);
+    
+    // Convert numbered lists (1. 2. 3.) to HTML ordered lists
+    formatted = formatted.replace(/^(\d+\.\s*\*\*.*?\*\*.*?)$/gm, '<li><strong>$1</strong></li>');
+    formatted = formatted.replace(/^(\d+\.\s*)(.*?)$/gm, '<li>$2</li>');
+    
+    // Convert bullet points (- or *) to HTML unordered lists  
+    formatted = formatted.replace(/^[-*]\s*\*\*(.*?)\*\*:\s*(.*?)$/gm, '<li><strong>$1</strong>: $2</li>');
+    formatted = formatted.replace(/^[-*]\s*(.*?)$/gm, '<li>$1</li>');
+    
+    // Wrap consecutive <li> elements in proper list tags
+    formatted = formatted.replace(/(<li>.*?<\/li>(\s*<li>.*?<\/li>)*)/gs, '<ul>$1</ul>');
+    
+    // Convert **bold** to <strong>
+    formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    
+    // Convert paragraphs (double line breaks) to <p> tags
+    formatted = formatted.replace(/\n\n+/g, '</p><p>');
+    formatted = '<p>' + formatted + '</p>';
+    
+    // Clean up empty paragraphs and fix list formatting
+    formatted = formatted.replace(/<p><\/p>/g, '');
+    formatted = formatted.replace(/<p>(<ul>.*?<\/ul>)<\/p>/gs, '$1');
+    formatted = formatted.replace(/<p>\s*<\/p>/g, '');
+    
+    // Convert single line breaks to <br> within paragraphs
+    formatted = formatted.replace(/(?<!<\/li>)\n(?!<)/g, '<br>');
+    
+    return formatted;
+}
+
 function addChatMessage(sender: 'user' | 'sousie', message: string) {
     if (!chatMessages) return;
     
@@ -679,12 +712,13 @@ function addChatMessage(sender: 'user' | 'sousie', message: string) {
     messageEl.className = `chat-message ${sender}`;
     
     if (sender === 'sousie') {
+        const formattedMessage = formatChatResponse(message);
         messageEl.innerHTML = `
             <div class="message-header">
                 ${panSVG}
                 <span>Sousie</span>
             </div>
-            <div class="message-content">${sanitizeHTML(message)}</div>
+            <div class="message-content">${formattedMessage}</div>
         `;
     } else {
         messageEl.innerHTML = `<div class="message-content">${sanitizeHTML(message)}</div>`;

@@ -794,6 +794,105 @@ function clearChatHistory() {
     });
 }
 
+// View-specific initialization functions
+function initializeRecipeFinderButtons() {
+    console.log('🔧 DEBUG: Initializing Recipe Finder buttons');
+    
+    const suggestBtn = document.getElementById('suggest-button') as HTMLButtonElement;
+    const surpriseBtn = document.getElementById('surprise-button') as HTMLButtonElement;
+    const startOverBtn = document.getElementById('start-over-button') as HTMLButtonElement;
+    const ingredientsInp = document.getElementById('ingredients-input') as HTMLInputElement;
+    const dietaryInp = document.getElementById('dietary-input') as HTMLInputElement;
+    
+    console.log('🔧 DEBUG: Recipe Finder elements found:', {
+        suggestBtn: !!suggestBtn,
+        surpriseBtn: !!surpriseBtn,
+        startOverBtn: !!startOverBtn,
+        ingredientsInp: !!ingredientsInp,
+        dietaryInp: !!dietaryInp
+    });
+    
+    // Remove existing listeners by cloning elements (clean approach)
+    if (suggestBtn) {
+        const newSuggestBtn = suggestBtn.cloneNode(true) as HTMLButtonElement;
+        suggestBtn.parentNode?.replaceChild(newSuggestBtn, suggestBtn);
+        newSuggestBtn.addEventListener('click', () => {
+            console.log('🔧 DEBUG: Suggest Recipes clicked');
+            handleSuggestRecipes();
+        });
+    }
+    
+    if (surpriseBtn) {
+        const newSurpriseBtn = surpriseBtn.cloneNode(true) as HTMLButtonElement;
+        surpriseBtn.parentNode?.replaceChild(newSurpriseBtn, surpriseBtn);
+        newSurpriseBtn.addEventListener('click', () => {
+            console.log('🔧 DEBUG: Surprise Me clicked');
+            handleSurpriseMe();
+        });
+    }
+    
+    if (startOverBtn) {
+        const newStartOverBtn = startOverBtn.cloneNode(true) as HTMLButtonElement;
+        startOverBtn.parentNode?.replaceChild(newStartOverBtn, startOverBtn);
+        newStartOverBtn.addEventListener('click', () => {
+            console.log('🔧 DEBUG: Start Over clicked');
+            handleRecipePageStartOver();
+        });
+    }
+    
+    // Add Enter key listeners for inputs
+    if (ingredientsInp) {
+        ingredientsInp.addEventListener('keypress', (event) => {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                handleSuggestRecipes();
+            }
+        });
+    }
+    
+    if (dietaryInp) {
+        dietaryInp.addEventListener('keypress', (event) => {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                handleSuggestRecipes();
+            }
+        });
+    }
+}
+
+function initializeMenuPlannerButtons() {
+    console.log('🔧 DEBUG: Initializing Menu Planner buttons');
+    
+    const weeklyMenuBtn = document.getElementById('generate-weekly-menu-button') as HTMLButtonElement;
+    console.log('🔧 DEBUG: Weekly menu button found:', !!weeklyMenuBtn);
+    
+    if (weeklyMenuBtn) {
+        const newWeeklyMenuBtn = weeklyMenuBtn.cloneNode(true) as HTMLButtonElement;
+        weeklyMenuBtn.parentNode?.replaceChild(newWeeklyMenuBtn, weeklyMenuBtn);
+        newWeeklyMenuBtn.addEventListener('click', () => {
+            console.log('🔧 DEBUG: Generate Weekly Menu clicked');
+            handleGenerateWeeklyMenu();
+        });
+    }
+}
+
+function initializeFavoritesButtons() {
+    console.log('🔧 DEBUG: Initializing Favorites buttons');
+    
+    const favoritesButtons = document.querySelectorAll('#favorites-view .btn-primary');
+    console.log('🔧 DEBUG: Favorites buttons found:', favoritesButtons.length);
+    
+    favoritesButtons.forEach(button => {
+        const btn = button as HTMLButtonElement;
+        const newBtn = btn.cloneNode(true) as HTMLButtonElement;
+        btn.parentNode?.replaceChild(newBtn, btn);
+        newBtn.addEventListener('click', () => {
+            console.log('🔧 DEBUG: Browse Favorites clicked');
+            handleBrowseFavorites();
+        });
+    });
+}
+
 // Navigation functionality
 function initializeNavigation() {
     if (!navItems || !viewContents) return;
@@ -816,6 +915,12 @@ function initializeNavigation() {
                 // Initialize view-specific functionality
                 if (targetView === 'chat') {
                     initializeChat();
+                } else if (targetView === 'recipes') {
+                    initializeRecipeFinderButtons();
+                } else if (targetView === 'menu') {
+                    initializeMenuPlannerButtons();
+                } else if (targetView === 'favorites') {
+                    initializeFavoritesButtons();
                 }
             }
         });
@@ -827,6 +932,12 @@ document.addEventListener('DOMContentLoaded', () => {
     initializeDOMReferences(); // Sets up elements specific to this page
     initializeNavigation(); // Sets up navigation
     initializeChat(); // Initialize chat
+    
+    // Initialize buttons for views that might be visible on load
+    setTimeout(() => {
+        initializeRecipeFinderButtons(); // Recipe Finder may be active
+        console.log('🔧 DEBUG: Initial Recipe Finder button initialization complete');
+    }, 100); // Small delay to ensure DOM is ready
 
     if (!OPENAI_API_KEY && resultsContainer) {
         resultsContainer.innerHTML = `<div class="message error-message">${panSVG} Configuration error: Sousie's AI brain is offline (API_KEY missing). Some features will be disabled.</div>`;
@@ -837,39 +948,7 @@ document.addEventListener('DOMContentLoaded', () => {
          resultsContainer.innerHTML = `<div class="message info-message">${panSVG}Welcome to Sousie's Kitchen! What delicious ingredients are we working with today? Or try a 'Surprise Me!'</div>`;
     }
 
-    // Recipe finder event listeners
-    console.log('🔧 DEBUG: Recipe Finder elements:', { 
-        suggestButton: !!suggestButton, 
-        ingredientsInput: !!ingredientsInput, 
-        dietaryInput: !!dietaryInput,
-        surpriseButton: !!surpriseButton,
-        startOverButton: !!startOverButton
-    });
-    
-    if (suggestButton && ingredientsInput && dietaryInput) {
-        suggestButton.addEventListener('click', () => {
-            console.log('🔧 DEBUG: Suggest Recipes button clicked');
-            handleSuggestRecipes();
-        });
-        ingredientsInput.addEventListener('keypress', (event) => {
-            if (event.key === 'Enter') { event.preventDefault(); handleSuggestRecipes(); }
-        });
-        dietaryInput.addEventListener('keypress', (event) => {
-            if (event.key === 'Enter') { event.preventDefault(); handleSuggestRecipes(); }
-        });
-    }
-    if (surpriseButton) {
-        surpriseButton.addEventListener('click', () => {
-            console.log('🔧 DEBUG: Surprise Me button clicked');
-            handleSurpriseMe();
-        });
-    }
-    if (startOverButton) {
-        startOverButton.addEventListener('click', () => {
-            console.log('🔧 DEBUG: Start Over button clicked');
-            handleRecipePageStartOver();
-        });
-    }
+    // Recipe finder event listeners moved to view-specific initialization
 
     // Chat event listeners
     if (chatInput && chatSendButton) {
@@ -909,30 +988,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Weekly Menu and Favorites event listeners
-    const weeklyMenuButton = document.getElementById('generate-weekly-menu-button') as HTMLButtonElement | null;
-    const browseFavoritesButton = document.querySelector('.btn-primary') as HTMLButtonElement | null; // This might need a more specific selector
-    
-    console.log('🔧 DEBUG: Additional elements:', { 
-        weeklyMenuButton: !!weeklyMenuButton, 
-        browseFavoritesButton: !!browseFavoritesButton 
-    });
-    
-    if (weeklyMenuButton) {
-        weeklyMenuButton.addEventListener('click', () => {
-            console.log('🔧 DEBUG: Generate Weekly Menu button clicked');
-            handleGenerateWeeklyMenu();
-        });
-    }
-    
-    // Note: Need more specific selector for favorites button
-    const favoritesButtons = document.querySelectorAll('#favorites-view .btn-primary');
-    favoritesButtons.forEach(button => {
-        button.addEventListener('click', () => {
-            console.log('🔧 DEBUG: Browse Favorites button clicked');
-            handleBrowseFavorites();
-        });
-    });
+    // Weekly Menu and Favorites event listeners moved to view-specific initialization
 
     // Unit change event listeners
     const coreUsUnitsButton = document.getElementById('us-units-button') as HTMLButtonElement | null;

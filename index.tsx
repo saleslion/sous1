@@ -129,7 +129,7 @@ async function generateHybridRecipes(ingredients: string[], dietary: string): Pr
             ? "US Customary units (e.g., cups, oz, lbs, tsp, tbsp)"
             : "Metric units (e.g., ml, grams, kg, L)";
         
-        const recipeObjectJsonFormat = `"name": "Recipe Name", "description": "Desc.", "anecdote": "Story.", "chefTip": "Tip.", "ingredients": ["1 cup flour"], "instructions": ["Preheat."]`;
+        const recipeObjectJsonFormat = `"name": "Recipe Name", "description": "Brief appetizing description", "anecdote": "Rich historical story or cultural background about this dish (2-3 sentences)", "chefTip": "Professional cooking tip for best results", "ingredients": ["2 lbs beef tenderloin", "2 tbsp olive oil", "1 tsp salt"], "instructions": ["Step 1: Detailed preparation step with timing", "Step 2: Detailed cooking step with temperature and timing", "Step 3: Final step with serving suggestions"]`;
         
         // Get existing recipes for AI inspiration
         let inspirationRecipes: any[] = [];
@@ -153,9 +153,43 @@ async function generateHybridRecipes(ingredients: string[], dietary: string): Pr
         }
         
         if (ingredients.length > 0 && ingredients[0].trim()) {
-            promptUserMessage = `Create recipes that FOCUS ON and FEATURE these main ingredients: "${ingredients[0]}"${dietary ? ` with dietary preferences: "${dietary}"` : ""}. The recipes should showcase these ingredients as the star components, not just use them incidentally. Suggest 3 distinct "mealPairings" where the main recipes center around these ingredients. Each MUST include: "mainRecipe" object and "sideRecipe" object (could be traditional side or dessert). Use ${unitInstructions}. Both "mainRecipe" and "sideRecipe" objects MUST contain: ${recipeObjectJsonFormat}. All fields are mandatory and non-empty. 'ingredients' and 'instructions' arrays MUST NOT be empty. Each "mealTitle" must be a creative, descriptive name for the meal pairing. KEEP ALL TEXT FIELDS CONCISE (under 200 chars each). Final JSON structure: {"mealPairings": [{"mealTitle": "Creative Meal Name Here", "mainRecipe": {...}, "sideRecipe": {...}}, ...3 pairings]}. RESPOND ONLY WITH VALID, COMPLETE JSON. NO OTHER TEXT.${inspirationContext}`;
+            promptUserMessage = `Create recipes that FOCUS ON and FEATURE these main ingredients: "${ingredients[0]}"${dietary ? ` with dietary preferences: "${dietary}"` : ""}. The recipes should showcase these ingredients as the star components, not just use them incidentally.
+
+RECIPE REQUIREMENTS:
+- Create DETAILED step-by-step instructions with specific temperatures, timing, and techniques
+- Include RICH anecdotes with historical context, cultural background, or interesting stories about each dish
+- Provide professional chef tips for achieving the best results
+- Use precise measurements and cooking terminology
+- Make instructions clear enough for home cooks to follow successfully
+
+Suggest 3 distinct "mealPairings" where the main recipes center around these ingredients. Each MUST include: "mainRecipe" object and "sideRecipe" object (could be traditional side or dessert). Use ${unitInstructions}. Both "mainRecipe" and "sideRecipe" objects MUST contain: ${recipeObjectJsonFormat}. 
+
+IMPORTANT FIELD REQUIREMENTS:
+- "anecdote": 2-3 sentences about the dish's history, cultural significance, or culinary story
+- "instructions": Detailed steps with temperatures, timing, and professional techniques (minimum 4-6 steps)
+- "chefTip": Specific professional advice for perfecting the dish
+- "ingredients": Precise measurements and quality specifications
+
+All fields are mandatory and non-empty. 'ingredients' and 'instructions' arrays MUST NOT be empty. Each "mealTitle" must be a creative, descriptive name for the meal pairing. Final JSON structure: {"mealPairings": [{"mealTitle": "Creative Meal Name Here", "mainRecipe": {...}, "sideRecipe": {...}}, ...3 pairings]}. RESPOND ONLY WITH VALID, COMPLETE JSON. NO OTHER TEXT.${inspirationContext}`;
         } else {
-            promptUserMessage = `Generate 3 creative surprise "mealPairings"${dietary ? ` that are ${dietary}` : ""}. Each MUST include: "mainRecipe" object and "sideRecipe" object. Use ${unitInstructions}. Both recipe objects MUST contain: ${recipeObjectJsonFormat}. All fields mandatory and non-empty. 'ingredients' and 'instructions' arrays MUST NOT be empty. Each "mealTitle" must be creative and descriptive. KEEP ALL TEXT FIELDS CONCISE (under 200 chars each). Final JSON structure: {"mealPairings": [{"mealTitle": "Creative Meal Name Here", "mainRecipe": {...}, "sideRecipe": {...}}, ...3 pairings]}. RESPOND ONLY WITH VALID, COMPLETE JSON. NO OTHER TEXT.${inspirationContext}`;
+            promptUserMessage = `Generate 3 creative surprise "mealPairings"${dietary ? ` that are ${dietary}` : ""}.
+
+RECIPE REQUIREMENTS:
+- Create DETAILED step-by-step instructions with specific temperatures, timing, and techniques
+- Include RICH anecdotes with historical context, cultural background, or interesting stories about each dish
+- Provide professional chef tips for achieving the best results
+- Use precise measurements and cooking terminology
+- Make instructions clear enough for home cooks to follow successfully
+
+Each MUST include: "mainRecipe" object and "sideRecipe" object. Use ${unitInstructions}. Both recipe objects MUST contain: ${recipeObjectJsonFormat}. 
+
+IMPORTANT FIELD REQUIREMENTS:
+- "anecdote": 2-3 sentences about the dish's history, cultural significance, or culinary story
+- "instructions": Detailed steps with temperatures, timing, and professional techniques (minimum 4-6 steps)
+- "chefTip": Specific professional advice for perfecting the dish
+- "ingredients": Precise measurements and quality specifications
+
+All fields mandatory and non-empty. 'ingredients' and 'instructions' arrays MUST NOT be empty. Each "mealTitle" must be creative and descriptive. Final JSON structure: {"mealPairings": [{"mealTitle": "Creative Meal Name Here", "mainRecipe": {...}, "sideRecipe": {...}}, ...3 pairings]}. RESPOND ONLY WITH VALID, COMPLETE JSON. NO OTHER TEXT.${inspirationContext}`;
         }
         
         const messages = [
@@ -970,7 +1004,7 @@ async function handleChatMessage(userMessage: string) {
             const unitInstructions = currentUnitSystem === 'us'
                 ? "US Customary units (e.g., cups, oz, lbs, tsp, tbsp)"
                 : "Metric units (e.g., ml, grams, kg, L)";
-            const recipeObjectJsonFormat = `"name": "Recipe Name", "description": "Desc.", "anecdote": "Story.", "chefTip": "Tip.", "ingredients": ["1 cup flour"], "instructions": ["Preheat."]`;
+            const recipeObjectJsonFormat = `"name": "Recipe Name", "description": "Brief appetizing description", "anecdote": "Rich historical story or cultural background about this dish (2-3 sentences)", "chefTip": "Professional cooking tip for best results", "ingredients": ["2 lbs beef tenderloin", "2 tbsp olive oil", "1 tsp salt"], "instructions": ["Step 1: Detailed preparation step with timing", "Step 2: Detailed cooking step with temperature and timing", "Step 3: Final step with serving suggestions"]`;
             
             // Extract conversation context to understand what the user was discussing
             const recentConversation = conversationHistory.slice(-6); // Last 3 exchanges
@@ -984,7 +1018,24 @@ async function handleChatMessage(userMessage: string) {
                 conversationContext = `\n\nCONVERSATION CONTEXT:\n${contextMessages}\n\nIMPORTANT: Based on our conversation above, if the user was asking about a specific ingredient, dish, or cooking method, make sure the recipes FOCUS ON that topic. For example, if they asked about "tenderloin" and now want "recipes", give them tenderloin recipes.`;
             }
             
-            const promptUserMessage = `Based on this request: "${userMessage}", create recipes that directly address what the user is asking for. If they mention specific ingredients, make those the STAR of the recipes. If they want to learn how to cook something (like "rotisserie chicken"), provide step-by-step recipes for making that dish from scratch. Suggest 3 distinct "mealPairings" that fully satisfy their request. Each MUST include: "mainRecipe" object and "sideRecipe" object (could be traditional side or dessert). Use ${unitInstructions}. Both "mainRecipe" and "sideRecipe" objects MUST contain: ${recipeObjectJsonFormat}. All fields are mandatory and non-empty. 'ingredients' and 'instructions' arrays MUST NOT be empty. Each "mealTitle" must be a creative, descriptive name for the meal pairing. KEEP ALL TEXT FIELDS CONCISE (under 200 chars each). Final JSON structure: {"mealPairings": [{"mealTitle": "Creative Meal Name Here", "mainRecipe": {...}, "sideRecipe": {...}}, ...3 pairings]}. RESPOND ONLY WITH VALID, COMPLETE JSON. NO OTHER TEXT.${conversationContext}`;
+            const promptUserMessage = `Based on this request: "${userMessage}", create recipes that directly address what the user is asking for. If they mention specific ingredients, make those the STAR of the recipes. If they want to learn how to cook something (like "rotisserie chicken"), provide step-by-step recipes for making that dish from scratch. 
+
+RECIPE REQUIREMENTS:
+- Create DETAILED step-by-step instructions with specific temperatures, timing, and techniques
+- Include RICH anecdotes with historical context, cultural background, or interesting stories about each dish
+- Provide professional chef tips for achieving the best results
+- Use precise measurements and cooking terminology
+- Make instructions clear enough for home cooks to follow successfully
+
+Suggest 3 distinct "mealPairings" that fully satisfy their request. Each MUST include: "mainRecipe" object and "sideRecipe" object (could be traditional side or dessert). Use ${unitInstructions}. Both "mainRecipe" and "sideRecipe" objects MUST contain: ${recipeObjectJsonFormat}. 
+
+IMPORTANT FIELD REQUIREMENTS:
+- "anecdote": 2-3 sentences about the dish's history, cultural significance, or culinary story
+- "instructions": Detailed steps with temperatures, timing, and professional techniques (minimum 4-6 steps)
+- "chefTip": Specific professional advice for perfecting the dish
+- "ingredients": Precise measurements and quality specifications
+
+All fields are mandatory and non-empty. 'ingredients' and 'instructions' arrays MUST NOT be empty. Each "mealTitle" must be a creative, descriptive name for the meal pairing. Final JSON structure: {"mealPairings": [{"mealTitle": "Creative Meal Name Here", "mainRecipe": {...}, "sideRecipe": {...}}, ...3 pairings]}. RESPOND ONLY WITH VALID, COMPLETE JSON. NO OTHER TEXT.${conversationContext}`;
             
             const messages = [
                 { role: 'system', content: RECIPE_GENERATION_INSTRUCTION },

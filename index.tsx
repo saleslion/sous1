@@ -838,7 +838,7 @@ function addChatMessage(sender: 'user' | 'sousie', message: string) {
 function isRecipeRequest(message: string): boolean {
     const lowerMessage = message.toLowerCase();
     
-    // Strong recipe card indicators - explicit requests for multiple recipes or recipe cards
+    // Strong recipe card indicators - explicit requests for structured recipes/cards
     const strongRecipeIndicators = [
         'give me recipes', 'show me recipes', 'find recipes', 'suggest recipes',
         'recipe ideas', 'multiple recipes', 'recipe cards', 'recipe suggestions',
@@ -846,11 +846,7 @@ function isRecipeRequest(message: string): boolean {
         'dinner ideas', 'lunch ideas', 'breakfast ideas', 'meal suggestions',
         'i have ingredients', 'using these ingredients', 'with these ingredients',
         'surprise me', 'random recipe', 'generate recipes',
-        // Cooking instruction requests
-        'how to cook', 'how to make', 'how do i cook', 'how do i make',
-        'i want to cook', 'i want to make', 'teach me to cook', 'teach me to make',
-        'don\'t know how', 'how do you cook', 'how do you make',
-        'recipe for', 'cooking instructions', 'step by step'
+        'can you give me some recipe ideas', 'give me some recipe'
     ];
     
     // Check for strong indicators that warrant recipe cards
@@ -862,27 +858,36 @@ function isRecipeRequest(message: string): boolean {
     const ingredientListPattern = /^(i have|using|with)\s+[\w\s,]+$/i;
     const isIngredientList = ingredientListPattern.test(message.trim());
     
-    // Specific dish pattern: mentions a specific dish with learning intent
-    const dishWords = [
-        'rotisserie chicken', 'roast chicken', 'fried chicken', 'grilled chicken',
-        'beef stew', 'chicken soup', 'pasta sauce', 'risotto', 'curry',
-        'stir fry', 'pizza dough', 'bread', 'cookies', 'cake', 'pie',
-        'roast beef', 'pork chops', 'salmon fillet', 'fish and chips',
-        'meatballs', 'lasagna', 'enchiladas', 'tacos', 'burgers'
+    // Only trigger recipe cards for very explicit recipe requests with multiple indicators
+    const explicitRecipeRequestPatterns = [
+        // Multiple recipe requests
+        /give me (\d+|\w+) recipes?/i,
+        /show me (\d+|\w+) recipes?/i,
+        /suggest (\d+|\w+|some) recipes?/i,
+        // Explicit card/structured recipe requests
+        /recipe cards?/i,
+        /recipe suggestions/i,
+        /meal ideas/i,
+        /dinner ideas/i,
+        /lunch ideas/i,
+        /breakfast ideas/i,
+        // Ingredient-based requests for multiple recipes
+        /(what can i make|recipes) (with|using) .+/i,
+        /i have .+ (what can i make|give me recipes)/i
     ];
-    const mentionsSpecificDish = dishWords.some(dish => lowerMessage.includes(dish));
-    const hasLearningIntent = lowerMessage.includes('cook') || lowerMessage.includes('make') || 
-                             lowerMessage.includes('how') || lowerMessage.includes('don\'t know');
-    const isSpecificDishRequest = mentionsSpecificDish && hasLearningIntent;
     
-    // Simple ingredient enumeration: "chicken rice onions" (3+ food words)
+    const hasExplicitPattern = explicitRecipeRequestPatterns.some(pattern => 
+        pattern.test(message)
+    );
+    
+    // Simple ingredient enumeration: "chicken rice onions" (3+ food words, short message)
     const foodWords = ['chicken', 'beef', 'pork', 'fish', 'salmon', 'rice', 'pasta', 
                       'potatoes', 'onions', 'garlic', 'tomatoes', 'cheese', 'eggs',
                       'flour', 'butter', 'vegetables', 'noodles', 'bread', 'milk'];
     const foodWordsInMessage = foodWords.filter(word => lowerMessage.includes(word));
-    const isSimpleIngredientList = foodWordsInMessage.length >= 3 && message.split(' ').length <= 12;
+    const isSimpleIngredientList = foodWordsInMessage.length >= 3 && message.split(' ').length <= 8;
     
-    return hasStrongIndicator || isIngredientList || isSimpleIngredientList || isSpecificDishRequest;
+    return hasStrongIndicator || isIngredientList || isSimpleIngredientList || hasExplicitPattern;
 }
 
 // Placeholder function for Weekly Menu

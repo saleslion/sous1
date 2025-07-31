@@ -43,31 +43,42 @@ let lastSuccessfulFetchSeed: number | null = null;
 let conversationHistory: Array<{role: string, content: string}> = [];
 
 // Sousie system instruction
-const SOUSIE_SYSTEM_INSTRUCTION = `You are Sousie, a friendly and creative AI cooking assistant with a warm, conversational personality. You're like a knowledgeable friend who loves to cook and share culinary wisdom.
+const SOUSIE_SYSTEM_INSTRUCTION = `You are Sousie, a knowledgeable and conversational AI cooking assistant. You have expertise in all aspects of cooking, food, and culinary arts, and you communicate in a friendly, helpful manner.
 
-Key traits:
-- Be conversational and engaging, like you're chatting with a friend in the kitchen
-- Ask follow-up questions to better understand what the user needs
-- Share cooking tips, tricks, and personal anecdotes about recipes
-- Be encouraging and enthusiastic about cooking adventures
-- Remember the conversation context and refer back to previous messages
-- Use emojis occasionally to add warmth (🍳👨‍🍳🥄✨)
-- Be specific with recipes and techniques, but explain things in an approachable way
-- Suggest variations and substitutions based on preferences or dietary needs
-- Share the "why" behind cooking techniques, not just the "how"
+Core capabilities:
+- Answer ANY cooking-related questions with detailed, accurate information
+- Provide step-by-step cooking guidance and troubleshooting
+- Explain cooking techniques, food science, and culinary principles
+- Suggest ingredient substitutions and recipe modifications
+- Help with meal planning, kitchen equipment, and food safety
+- Discuss nutrition, dietary restrictions, and food allergies
+- Share cultural food knowledge and cooking traditions
+- Provide cooking tips for all skill levels from beginner to advanced
 
-Topics you excel at:
-- Recipe suggestions and modifications
-- Cooking techniques and troubleshooting
-- Ingredient substitutions and alternatives
-- Meal planning and prep strategies
-- Kitchen equipment recommendations
-- Food safety and storage tips
-- Dietary accommodations (vegan, gluten-free, etc.)
-- Flavor pairing and seasoning advice
-- Cooking for different occasions and group sizes
+Communication style:
+- Be conversational and engaging, like chatting with a knowledgeable friend
+- Ask clarifying questions when needed for better assistance
+- Remember context from our conversation and build upon it
+- Use emojis sparingly but effectively (🍳👨‍🍳🥄✨)
+- Give thorough explanations while being easy to understand
+- Be encouraging and supportive of cooking adventures
+- Provide specific, actionable advice rather than vague suggestions
 
-Always be helpful, encouraging, and ready to dive deeper into any cooking topic!`;
+You can discuss:
+- Recipe creation, modification, and troubleshooting
+- Cooking techniques from basic to advanced
+- Ingredient properties, selection, and storage
+- Kitchen equipment and tool recommendations
+- Food safety, handling, and preservation
+- Nutritional information and dietary considerations
+- Cultural cuisines and food traditions
+- Baking science and pastry techniques
+- Restaurant cooking vs home cooking
+- Food presentation and plating
+- Wine/beverage pairing with food
+- Cooking for special occasions or dietary needs
+
+Always provide helpful, accurate information and be ready to dive deep into any culinary topic!`;
 
 // Separate system instruction for recipe generation (structured JSON responses)
 const RECIPE_GENERATION_INSTRUCTION = "You are a JSON recipe generator. You MUST respond ONLY with valid JSON format. Do NOT include any explanatory text, greetings, or conversational language. Do NOT use markdown code blocks. Provide only the raw JSON object with detailed recipe data including specific measurements and clear step-by-step instructions.";
@@ -683,40 +694,37 @@ function addChatMessage(sender: 'user' | 'sousie', message: string) {
     chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
-// Helper function to detect if user is asking for recipes
+// Helper function to detect if user is asking for recipes (structured cards)
 function isRecipeRequest(message: string): boolean {
-    const recipeKeywords = [
-        'recipe', 'recipes', 'cook', 'cooking', 'make', 'prepare', 'dish', 'meal',
-        'ingredient', 'ingredients', 'how to make', 'how do i cook', 'what can i make',
-        'dinner', 'lunch', 'breakfast', 'dessert', 'appetizer', 'snack',
-        'suggestions', 'suggest', 'recommend', 'ideas', 'what should i',
-        'give me', 'show me', 'find me', 'help me', 'i want to eat',
-        'i have', 'with these ingredients', 'using'
-    ];
-    
-    // Common food ingredients that often indicate recipe requests
-    const foodKeywords = [
-        'chicken', 'beef', 'pork', 'fish', 'salmon', 'steak', 'ribeye', 'sirloin',
-        'potatoes', 'rice', 'pasta', 'noodles', 'vegetables', 'onions', 'garlic',
-        'tomatoes', 'cheese', 'eggs', 'flour', 'butter', 'oil', 'spices'
-    ];
-    
     const lowerMessage = message.toLowerCase();
     
-    // Check for explicit recipe keywords
-    const hasRecipeKeyword = recipeKeywords.some(keyword => lowerMessage.includes(keyword));
+    // Strong recipe card indicators - explicit requests for multiple recipes or recipe cards
+    const strongRecipeIndicators = [
+        'give me recipes', 'show me recipes', 'find recipes', 'suggest recipes',
+        'recipe ideas', 'multiple recipes', 'recipe cards', 'recipe suggestions',
+        'what can i make with', 'recipes for', 'recipes using', 'meal ideas',
+        'dinner ideas', 'lunch ideas', 'breakfast ideas', 'meal suggestions',
+        'i have ingredients', 'using these ingredients', 'with these ingredients',
+        'surprise me', 'random recipe', 'generate recipes'
+    ];
     
-    // Check if message contains food ingredients (possible recipe request)
-    const hasFoodKeyword = foodKeywords.some(keyword => lowerMessage.includes(keyword));
+    // Check for strong indicators that warrant recipe cards
+    const hasStrongIndicator = strongRecipeIndicators.some(indicator => 
+        lowerMessage.includes(indicator)
+    );
     
-    // Context-aware detection: if previous message was about ingredients, current message might be asking for recipes
-    const contextualPhrases = ['and', 'with', 'plus', 'also', 'what about', 'how about'];
-    const hasContextualPhrase = contextualPhrases.some(phrase => lowerMessage.includes(phrase));
+    // Ingredient list pattern: "i have chicken, rice, onions" or similar
+    const ingredientListPattern = /^(i have|using|with)\s+[\w\s,]+$/i;
+    const isIngredientList = ingredientListPattern.test(message.trim());
     
-    // If message has food keywords and is short (likely ingredient list), treat as recipe request
-    const isShortFoodMessage = hasFoodKeyword && message.split(' ').length <= 10;
+    // Simple ingredient enumeration: "chicken rice onions" (3+ food words)
+    const foodWords = ['chicken', 'beef', 'pork', 'fish', 'salmon', 'rice', 'pasta', 
+                      'potatoes', 'onions', 'garlic', 'tomatoes', 'cheese', 'eggs',
+                      'flour', 'butter', 'vegetables', 'noodles', 'bread', 'milk'];
+    const foodWordsInMessage = foodWords.filter(word => lowerMessage.includes(word));
+    const isSimpleIngredientList = foodWordsInMessage.length >= 3 && message.split(' ').length <= 12;
     
-    return hasRecipeKeyword || isShortFoodMessage || (hasFoodKeyword && hasContextualPhrase);
+    return hasStrongIndicator || isIngredientList || isSimpleIngredientList;
 }
 
 // Placeholder function for Weekly Menu
@@ -752,9 +760,9 @@ async function handleChatMessage(userMessage: string) {
     // Add user message to conversation history
     conversationHistory.push({ role: 'user', content: userMessage });
     
-    // Keep conversation history manageable (last 10 exchanges = 20 messages)
-    if (conversationHistory.length > 20) {
-        conversationHistory = conversationHistory.slice(-20);
+    // Keep conversation history manageable (last 15 exchanges = 30 messages for better context)
+    if (conversationHistory.length > 30) {
+        conversationHistory = conversationHistory.slice(-30);
     }
     
     // Add user message to UI
@@ -918,7 +926,7 @@ async function handleChatMessage(userMessage: string) {
             ...conversationHistory
         ];
         
-        response = await callOpenAI(messages, 0.8); // Higher temperature for more creative responses
+        response = await callOpenAI(messages, 0.9); // Higher temperature for more creative and varied responses
         
         // Add assistant response to conversation history
         conversationHistory.push({ role: 'assistant', content: response });

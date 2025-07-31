@@ -92,29 +92,82 @@ function initializeDOMReferences() {
     viewContents = document.querySelectorAll('.view');
 }
 
+// Loading message rotation
+let loadingMessageInterval: number | null = null;
+let currentMessageIndex = 0;
+
+const cookingMessages = [
+    "Sousie is cooking recipes for you...",
+    "Still cooking, almost ready...",
+    "The fires are hot, recipes brewing...",
+    "Mixing ingredients with love...",
+    "Adding the perfect spices...",
+    "Tasting and perfecting flavors...",
+    "Almost done, plating the dishes...",
+    "Final touches being added...",
+    "Creating culinary magic...",
+    "Stirring up something delicious..."
+];
+
+function startLoadingMessageRotation(initialMessage?: string) {
+    const loadingMessage = document.getElementById('loading-message');
+    if (!loadingMessage) return;
+    
+    // Set initial message
+    if (initialMessage) {
+        loadingMessage.textContent = initialMessage;
+    } else {
+        loadingMessage.textContent = cookingMessages[0];
+    }
+    
+    currentMessageIndex = 0;
+    
+    // Rotate messages every 2 seconds
+    loadingMessageInterval = setInterval(() => {
+        currentMessageIndex = (currentMessageIndex + 1) % cookingMessages.length;
+        if (loadingMessage) {
+            loadingMessage.style.opacity = '0.5';
+            setTimeout(() => {
+                if (loadingMessage) {
+                    loadingMessage.textContent = cookingMessages[currentMessageIndex];
+                    loadingMessage.style.opacity = '1';
+                }
+            }, 200);
+        }
+    }, 2000);
+}
+
+function stopLoadingMessageRotation() {
+    if (loadingMessageInterval) {
+        clearInterval(loadingMessageInterval);
+        loadingMessageInterval = null;
+    }
+}
+
 function setRecipeSuggestionsLoading(loading: boolean, ingredientsForLoadingMessage?: string) {
     console.log('🔧 DEBUG: setRecipeSuggestionsLoading called:', { loading, ingredientsForLoadingMessage });
     isLoadingRecipes = loading;
     
     // Show/hide loading overlay
     const loadingOverlay = document.getElementById('loading-overlay');
-    const loadingMessage = document.getElementById('loading-message');
     
     if (loadingOverlay) {
         if (loading) {
-            // Update loading message
-            if (loadingMessage && ingredientsForLoadingMessage) {
-                if (ingredientsForLoadingMessage === "a delightful surprise") {
-                    loadingMessage.textContent = "Conjuring surprise recipes just for you...";
-                } else {
-                    loadingMessage.textContent = `Creating recipes with ${ingredientsForLoadingMessage}...`;
-                }
+            // Determine initial message
+            let initialMessage = "Sousie is cooking recipes for you...";
+            if (ingredientsForLoadingMessage === "a delightful surprise") {
+                initialMessage = "Conjuring surprise recipes just for you...";
+            } else if (ingredientsForLoadingMessage) {
+                initialMessage = `Creating recipes with ${ingredientsForLoadingMessage}...`;
             }
-            // Show overlay
+            
+            // Show overlay and start message rotation
             loadingOverlay.style.display = 'flex';
+            startLoadingMessageRotation(initialMessage);
         } else {
-            // Hide overlay
+            // Hide overlay and stop message rotation
             loadingOverlay.style.display = 'none';
+            stopLoadingMessageRotation();
         }
     }
     if (ingredientsInput) ingredientsInput.disabled = loading;

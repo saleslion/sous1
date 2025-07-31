@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- SEO Meta Tags -->
+    <title>FAQ - Sousie AI Cooking Assistant | Frequently Asked Questions</title>
+    <meta name="description" content="Get answers to frequently asked questions about Sousie, your AI cooking assistant. Learn how to generate recipes, use features, and get cooking help." />
+    <meta name="keywords" content="Sousie FAQ, AI cooking assistant help, recipe generator questions, cooking app support" />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://sousie.fun/faq.html" />
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-HMVLTZ0Z9H"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-HMVLTZ0Z9H');
+    </script>
+    
+    <!-- Fonts and Styles -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            /* Albert Heijn Brand Colors */
+            --ah-blue: #0066CC;
+            --ah-blue-dark: #004499;
+            --ah-blue-light: #3388DD;
+            --ah-white: #FFFFFF;
+            --ah-light-blue: #E6F2FF;
+            --ah-gray: #F0F0F0;
+            --ah-dark-gray: #555555;
+            --ah-black: #1A1A1A;
+            
+            --primary: var(--ah-blue);
+            --primary-dark: var(--ah-blue-dark);
+            --background: var(--ah-light-blue);
+            --surface: var(--ah-white);
+            --text: var(--ah-black);
+            --text-muted: var(--ah-dark-gray);
+            --border: var(--ah-gray);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', 'Helvetica Neue', 'Arial', sans-serif;
+            background: var(--background);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .logo {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        
+        .logo svg {
+            width: 32px;
+            height: 32px;
+            fill: var(--primary);
+        }
+        
+        .logo-text {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--text);
+        }
+        
+        h1 {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 12px;
+        }
+        
+        .subtitle {
+            font-size: 18px;
+            color: var(--text-muted);
+            margin-bottom: 40px;
+        }
+        
+        .faq-item {
+            background: var(--surface);
+            border: 2px solid var(--border);
+            border-radius: 0;
+            margin-bottom: 16px;
+            overflow: hidden;
+        }
+        
+        .faq-question {
+            padding: 20px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--surface);
+            border: none;
+            width: 100%;
+            text-align: left;
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text);
+            transition: background-color 0.2s ease;
+        }
+        
+        .faq-question:hover {
+            background: var(--ah-light-blue);
+        }
+        
+        .faq-question.active {
+            background: var(--primary);
+            color: var(--ah-white);
+        }
+        
+        .faq-icon {
+            font-size: 12px;
+            transition: transform 0.3s ease;
+        }
+        
+        .faq-question.active .faq-icon {
+            transform: rotate(180deg);
+        }
+        
+        .faq-answer {
+            padding: 0 20px;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease, padding 0.3s ease;
+        }
+        
+        .faq-answer.active {
+            padding: 20px;
+            max-height: 500px;
+        }
+        
+        .faq-answer p {
+            color: var(--text-muted);
+            line-height: 1.6;
+            margin-bottom: 12px;
+        }
+        
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+            margin-top: 40px;
+            transition: color 0.2s ease;
+        }
+        
+        .back-link:hover {
+            color: var(--primary-dark);
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 60px;
+            padding-top: 40px;
+            border-top: 1px solid var(--border);
+            color: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">
+                <svg viewBox="0 0 262 262" xmlns="http://www.w3.org/2000/svg">
+                    <g fill-rule="evenodd">
+                        <path d="M151.552 143.4l91.208-91.207a10.97 10.97 0 0 0 0-15.514L227.246 21.16a10.97 10.97 0 0 0-15.514 0L120.52 112.37l25.842 25.842 5.19 5.189z" fill="currentColor"/>
+                        <path d="M131.623 241.667c61.662 0 111.66-49.998 111.66-111.66 0-61.662-49.998-111.66-111.66-111.66-61.662 0-111.66 49.998-111.66 111.66 0 61.662 49.998 111.66 111.66 111.66zm0-15.514c-53.076 0-96.146-43.07-96.146-96.146s43.07-96.146 96.146-96.146 96.146 43.07 96.146 96.146-43.07 96.146-96.146 96.146z" fill="currentColor"/>
+                    </g>
+                </svg>
+                <span class="logo-text">Sousie</span>
+            </div>
+            <h1>Frequently Asked Questions</h1>
+            <p class="subtitle">Get answers to common questions about your AI cooking assistant</p>
+        </div>
+
+        <div class="faq-list">
+            <div class="faq-item">
+                <button class="faq-question" onclick="toggleFAQ(this)">
+                    What is Sousie and how does it work?
+                    <i class="faq-icon fas fa-chevron-down"></i>
+                </button>
+                <div class="faq-answer">
+                    <p>Sousie is an AI-powered cooking assistant that helps you discover and create delicious recipes. Using advanced AI technology, Sousie can generate personalized recipes based on the ingredients you have available, suggest surprise meal combinations, and provide interactive cooking guidance through our chat interface.</p>
+                    <p>Simply tell Sousie what ingredients you have, any dietary preferences, and let our AI create customized recipes with detailed instructions, cooking tips, and even fun culinary anecdotes!</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question" onclick="toggleFAQ(this)">
+                    How do I generate recipes with my available ingredients?
+                    <i class="faq-icon fas fa-chevron-down"></i>
+                </button>
+                <div class="faq-answer">
+                    <p>Using the Recipe Finder is easy! Navigate to the "Recipe Finder" section and enter the ingredients you have in your kitchen. For example, type "chicken, rice, onions" in the ingredients field.</p>
+                    <p>You can also add any dietary restrictions or preferences in the optional field (like "vegetarian", "gluten-free", or "low-carb"). Then click "Find Recipes" and Sousie will generate multiple creative meal pairing suggestions with detailed recipes!</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question" onclick="toggleFAQ(this)">
+                    What does the "Surprise Me" feature do?
+                    <i class="faq-icon fas fa-chevron-down"></i>
+                </button>
+                <div class="faq-answer">
+                    <p>The "Surprise Me" feature is perfect when you're feeling adventurous or need culinary inspiration! Instead of specifying ingredients, Sousie will generate completely random, creative recipe combinations.</p>
+                    <p>Each surprise includes unique meal pairings with both main dishes and complementary sides or desserts. It's a great way to discover new cuisines, try different cooking techniques, and break out of your usual cooking routine!</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question" onclick="toggleFAQ(this)">
+                    Can I switch between US and metric measurements?
+                    <i class="faq-icon fas fa-chevron-down"></i>
+                </button>
+                <div class="faq-answer">
+                    <p>Absolutely! Sousie supports both US customary units (cups, ounces, pounds, teaspoons) and metric units (milliliters, grams, kilograms, liters).</p>
+                    <p>You can toggle between measurement systems using the "US" and "Metric" buttons in the top-right corner of the app. All recipes will automatically display measurements in your preferred system, making it easy to cook no matter where you are in the world!</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question" onclick="toggleFAQ(this)">
+                    Is Sousie free to use? Do I need to create an account?
+                    <i class="faq-icon fas fa-chevron-down"></i>
+                </button>
+                <div class="faq-answer">
+                    <p>Sousie is completely free to use! You can generate recipes, chat with the AI, and access all core features without any payment or subscription.</p>
+                    <p>While creating an account is optional, it allows you to save your favorite recipes, track your cooking history, and access additional features like weekly menu planning. You can start using Sousie immediately without signing up - just dive in and start cooking!</p>
+                </div>
+            </div>
+        </div>
+
+        <a href="/" class="back-link">
+            <i class="fas fa-arrow-left"></i>
+            Back to Sousie
+        </a>
+
+        <div class="footer">
+            <p>&copy; 2025 Sousie - Your AI Cooking Companion</p>
+        </div>
+    </div>
+
+    <script>
+        function toggleFAQ(button) {
+            const answer = button.nextElementSibling;
+            const isActive = button.classList.contains('active');
+            
+            // Close all other FAQs
+            document.querySelectorAll('.faq-question').forEach(q => {
+                q.classList.remove('active');
+                q.nextElementSibling.classList.remove('active');
+            });
+            
+            // Toggle current FAQ
+            if (!isActive) {
+                button.classList.add('active');
+                answer.classList.add('active');
+            }
+        }
+    </script>
+</body>
+</html>

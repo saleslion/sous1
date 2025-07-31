@@ -798,18 +798,22 @@ function clearChatHistory() {
 function initializeRecipeFinderButtons() {
     console.log('🔧 DEBUG: Initializing Recipe Finder buttons');
     
+    // Refresh DOM references for Recipe Finder view
+    ingredientsInput = document.getElementById('ingredients-input') as HTMLInputElement;
+    dietaryInput = document.getElementById('dietary-input') as HTMLInputElement;
+    resultsContainer = document.getElementById('results-container') as HTMLDivElement;
+    
     const suggestBtn = document.getElementById('suggest-button') as HTMLButtonElement;
     const surpriseBtn = document.getElementById('surprise-button') as HTMLButtonElement;
     const startOverBtn = document.getElementById('start-over-button') as HTMLButtonElement;
-    const ingredientsInp = document.getElementById('ingredients-input') as HTMLInputElement;
-    const dietaryInp = document.getElementById('dietary-input') as HTMLInputElement;
     
     console.log('🔧 DEBUG: Recipe Finder elements found:', {
         suggestBtn: !!suggestBtn,
         surpriseBtn: !!surpriseBtn,
         startOverBtn: !!startOverBtn,
-        ingredientsInp: !!ingredientsInp,
-        dietaryInp: !!dietaryInp
+        ingredientsInput: !!ingredientsInput,
+        dietaryInput: !!dietaryInput,
+        resultsContainer: !!resultsContainer
     });
     
     // Remove existing listeners by cloning elements (clean approach)
@@ -841,8 +845,8 @@ function initializeRecipeFinderButtons() {
     }
     
     // Add Enter key listeners for inputs
-    if (ingredientsInp) {
-        ingredientsInp.addEventListener('keypress', (event) => {
+    if (ingredientsInput) {
+        ingredientsInput.addEventListener('keypress', (event) => {
             if (event.key === 'Enter') {
                 event.preventDefault();
                 handleSuggestRecipes();
@@ -850,8 +854,8 @@ function initializeRecipeFinderButtons() {
         });
     }
     
-    if (dietaryInp) {
-        dietaryInp.addEventListener('keypress', (event) => {
+    if (dietaryInput) {
+        dietaryInput.addEventListener('keypress', (event) => {
             if (event.key === 'Enter') {
                 event.preventDefault();
                 handleSuggestRecipes();

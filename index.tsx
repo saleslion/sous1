@@ -890,7 +890,7 @@ function isRecipeRequest(message: string): boolean {
         'dinner ideas', 'lunch ideas', 'breakfast ideas', 'meal suggestions',
         'i have ingredients', 'using these ingredients', 'with these ingredients',
         'surprise me', 'random recipe', 'generate recipes',
-        'can you give me some recipe ideas', 'give me some recipe'
+        'some recipes'
     ];
     
     // Check for strong indicators that warrant recipe cards
@@ -902,20 +902,22 @@ function isRecipeRequest(message: string): boolean {
     const ingredientListPattern = /^(i have|using|with)\s+[\w\s,]+$/i;
     const isIngredientList = ingredientListPattern.test(message.trim());
     
-    // Only trigger recipe cards for very explicit recipe requests with multiple indicators
+    // Dynamic pattern matching for recipe requests
     const explicitRecipeRequestPatterns = [
-        // Multiple recipe requests
-        /give me (\d+|\w+) recipes?/i,
-        /show me (\d+|\w+) recipes?/i,
+        // Multiple recipe requests with flexible quantities/descriptors
+        /give me (\d+|\w+|some) recipes?/i,
+        /show me (\d+|\w+|some) recipes?/i,
         /suggest (\d+|\w+|some) recipes?/i,
-        // Explicit card/structured recipe requests
+        // Generic "[word] recipes" pattern (catches salmon recipes, chicken recipes, etc.)
+        /\b\w+ recipes?\b/i,
+        // Recipe request patterns
         /recipe cards?/i,
         /recipe suggestions/i,
         /meal ideas/i,
         /dinner ideas/i,
         /lunch ideas/i,
         /breakfast ideas/i,
-        // Ingredient-based requests for multiple recipes
+        // Ingredient-based requests
         /(what can i make|recipes) (with|using) .+/i,
         /i have .+ (what can i make|give me recipes)/i
     ];

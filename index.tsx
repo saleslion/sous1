@@ -817,6 +817,87 @@ function initializeChat() {
     }
 }
 
+// Function to detect if a message contains recipe-like content
+function containsRecipeContent(message: string): boolean {
+    const recipeIndicators = [
+        /ingredients?:/i,
+        /instructions?:/i,
+        /steps?:/i,
+        /directions?:/i,
+        /method:/i,
+        /recipe for/i,
+        /how to make/i,
+        /- \d+/,  // numbered lists like "1. Step"
+        /\d+\.\s/,  // numbered steps like "1. "
+        /bake.*degrees?/i,
+        /cook.*minutes?/i,
+        /heat.*oil/i,
+        /preheat.*oven/i
+    ];
+    
+    return recipeIndicators.some(pattern => pattern.test(message));
+}
+
+// Function to parse conversational recipe content into structured format
+function parseConversationalRecipe(message: string): any | null {
+    // Simple parsing for conversational recipes
+    const recipePattern = /([^:]+)::\s*(.+?)(?=\n[A-Z][^:]*::|$)/gs;
+    const matches = Array.from(message.matchAll(recipePattern));
+    
+    if (matches.length > 0) {
+        const recipes = matches.map((match, index) => {
+            const name = match[1].trim();
+            const content = match[2].trim();
+            
+            // Extract ingredients and instructions from the content
+            const ingredients = [];
+            const instructions = [];
+            
+            const lines = content.split('\n').map(line => line.trim()).filter(line => line);
+            
+            for (const line of lines) {
+                if (line.startsWith('-') || line.startsWith('•')) {
+                    const cleanLine = line.replace(/^[-•]\s*/, '');
+                    if (cleanLine.includes('tbsp') || cleanLine.includes('cup') || cleanLine.includes('lb') || 
+                        cleanLine.includes('oz') || cleanLine.includes('tsp') || /^\d+/.test(cleanLine)) {
+                        ingredients.push(cleanLine);
+                    } else {
+                        instructions.push(cleanLine);
+                    }
+                } else if (line) {
+                    instructions.push(line);
+                }
+            }
+            
+            return {
+                mealTitle: name + " Experience",
+                mainRecipe: {
+                    name: name,
+                    description: `A delicious ${name.toLowerCase()} recipe`,
+                    anecdote: `This ${name.toLowerCase()} recipe brings together traditional flavors with modern convenience, perfect for home cooking.`,
+                    chefTip: "Follow the steps carefully for best results and don't rush the cooking process.",
+                    ingredients: ingredients.length > 0 ? ingredients : [`Fresh ingredients for ${name.toLowerCase()}`],
+                    instructions: instructions.length > 0 ? instructions : [`Prepare and cook the ${name.toLowerCase()} according to traditional methods.`],
+                    source: 'ai_generated'
+                },
+                sideRecipe: {
+                    name: "Perfect Side",
+                    description: "A complementary side dish",
+                    anecdote: "The perfect accompaniment to complete your meal.",
+                    chefTip: "Serve fresh for best flavor.",
+                    ingredients: ["Seasonal vegetables", "Salt and pepper to taste"],
+                    instructions: ["Prepare your choice of sides", "Season and serve alongside the main dish"],
+                    source: 'ai_generated'
+                }
+            };
+        });
+        
+        return { mealPairings: recipes.slice(0, 3) }; // Limit to 3 recipes
+    }
+    
+    return null;
+}
+
 // Format AI response text into readable HTML with proper formatting
 function formatChatResponse(message: string): string {
     let formatted = sanitizeHTML(message);
@@ -1177,8 +1258,46 @@ All fields are mandatory and non-empty. 'ingredients' and 'instructions' arrays 
         // Remove loading indicator
         loadingEl.remove();
         
-        // Add Sousie's response
-        addChatMessage('sousie', response);
+        // Check if the conversational response contains recipe content
+        if (containsRecipeContent(response)) {
+            console.log("🍳 DEBUG: Detected recipe content in conversational response, formatting as cards");
+            
+            const parsedRecipes = parseConversationalRecipe(response);
+            if (parsedRecipes && parsedRecipes.mealPairings && parsedRecipes.mealPairings.length > 0) {
+                // Create recipe cards from conversational content
+                const messageEl = document.createElement('div');
+                messageEl.className = 'chat-message sousie';
+                messageEl.innerHTML = `
+                    <div class="message-header">
+                        ${panSVG}
+                        <span>Sousie</span>
+                    </div>
+                    <div class="message-content">
+                        <p>Here are some delicious recipes I found for you! 🍳</p>
+                        <div class="recipes-grid">
+                        </div>
+                    </div>
+                `;
+                
+                const recipesGrid = messageEl.querySelector('.recipes-grid');
+                if (recipesGrid) {
+                    parsedRecipes.mealPairings.forEach((mealPairing: any, index: number) => {
+                        if (mealPairing && mealPairing.mainRecipe) {
+                            recipesGrid.appendChild(createExpandableRecipeCard(mealPairing, `conv-${index}`, false));
+                        }
+                    });
+                }
+                
+                chatMessages?.appendChild(messageEl);
+                chatMessages!.scrollTop = chatMessages!.scrollHeight;
+            } else {
+                // Fallback to regular formatted response if parsing fails
+                addChatMessage('sousie', response);
+            }
+        } else {
+            // Regular conversational response
+            addChatMessage('sousie', response);
+        }
         
         // Track successful chat intent
         await trackUserIntent({

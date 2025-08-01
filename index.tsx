@@ -832,69 +832,118 @@ function containsRecipeContent(message: string): boolean {
         /bake.*degrees?/i,
         /cook.*minutes?/i,
         /heat.*oil/i,
-        /preheat.*oven/i
+        /preheat.*oven/i,
+        // Look for multiple recipe-like sections
+        /[A-Z][^:\n]*:\s*-.*(?:\n.*)*ingredients?:/is,
+        // Recipe pattern: Title: - Description format
+        /[A-Z][^:\n]*:\s*-\s*[^.]*recipe/i
     ];
     
-    return recipeIndicators.some(pattern => pattern.test(message));
+    const hasMultipleRecipes = (message.match(/[A-Z][^:\n]*:\s*-/g) || []).length >= 2;
+    const hasRecipeIndicators = recipeIndicators.some(pattern => pattern.test(message));
+    
+    return hasRecipeIndicators || hasMultipleRecipes;
 }
 
 // Function to parse conversational recipe content into structured format
 function parseConversationalRecipe(message: string): any | null {
-    // Simple parsing for conversational recipes
-    const recipePattern = /([^:]+)::\s*(.+?)(?=\n[A-Z][^:]*::|$)/gs;
+    console.log("🔧 DEBUG: Parsing conversational recipe content");
+    
+    // Pattern for "Recipe Name: - Description" format
+    const recipePattern = /([^:\n]+):\s*-\s*([^]*?)(?=\n[A-Z][^:\n]*:\s*-|\n\n|$)/g;
     const matches = Array.from(message.matchAll(recipePattern));
+    
+    console.log("🔧 DEBUG: Found", matches.length, "recipe matches");
     
     if (matches.length > 0) {
         const recipes = matches.map((match, index) => {
             const name = match[1].trim();
             const content = match[2].trim();
             
-            // Extract ingredients and instructions from the content
+            console.log("🔧 DEBUG: Processing recipe:", name);
+            
+            // Parse the content for ingredients and instructions
             const ingredients = [];
             const instructions = [];
             
-            const lines = content.split('\n').map(line => line.trim()).filter(line => line);
+            // Look for "Ingredients:" and "Instructions:" sections
+            const ingredientsMatch = content.match(/ingredients?:\s*([^]*?)(?=instructions?:|$)/i);
+            const instructionsMatch = content.match(/instructions?:\s*([^]*?)$/i);
             
-            for (const line of lines) {
-                if (line.startsWith('-') || line.startsWith('•')) {
+            if (ingredientsMatch) {
+                const ingredientLines = ingredientsMatch[1].split('\n')
+                    .map(line => line.trim().replace(/^[-•]\s*/, ''))
+                    .filter(line => line);
+                ingredients.push(...ingredientLines);
+            }
+            
+            if (instructionsMatch) {
+                const instructionLines = instructionsMatch[1].split('\n')
+                    .map(line => line.trim().replace(/^[-•]\s*/, '').replace(/^\d+\.\s*/, ''))
+                    .filter(line => line);
+                instructions.push(...instructionLines);
+            }
+            
+            // If no structured ingredients/instructions found, extract from bullet points
+            if (ingredients.length === 0 && instructions.length === 0) {
+                const lines = content.split('\n').map(line => line.trim()).filter(line => line);
+                let foundIngredients = false;
+                
+                for (const line of lines) {
+                    if (line.toLowerCase().includes('ingredients:')) {
+                        foundIngredients = true;
+                        continue;
+                    }
+                    if (line.toLowerCase().includes('instructions:')) {
+                        foundIngredients = false;
+                        continue;
+                    }
+                    
                     const cleanLine = line.replace(/^[-•]\s*/, '');
-                    if (cleanLine.includes('tbsp') || cleanLine.includes('cup') || cleanLine.includes('lb') || 
-                        cleanLine.includes('oz') || cleanLine.includes('tsp') || /^\d+/.test(cleanLine)) {
+                    if (foundIngredients || cleanLine.match(/\b(cup|tbsp|tsp|lb|oz|gram|kg)\b/i)) {
                         ingredients.push(cleanLine);
-                    } else {
+                    } else if (cleanLine) {
                         instructions.push(cleanLine);
                     }
-                } else if (line) {
-                    instructions.push(line);
                 }
             }
             
+            // Fallback content if parsing fails
+            if (ingredients.length === 0) {
+                ingredients.push("See recipe description for ingredients");
+            }
+            if (instructions.length === 0) {
+                instructions.push(content.replace(/^[-•]\s*/gm, '').trim());
+            }
+            
             return {
-                mealTitle: name + " Experience",
+                mealTitle: name + " Delight",
                 mainRecipe: {
                     name: name,
-                    description: `A delicious ${name.toLowerCase()} recipe`,
-                    anecdote: `This ${name.toLowerCase()} recipe brings together traditional flavors with modern convenience, perfect for home cooking.`,
-                    chefTip: "Follow the steps carefully for best results and don't rush the cooking process.",
-                    ingredients: ingredients.length > 0 ? ingredients : [`Fresh ingredients for ${name.toLowerCase()}`],
-                    instructions: instructions.length > 0 ? instructions : [`Prepare and cook the ${name.toLowerCase()} according to traditional methods.`],
+                    description: `A delicious ${name.toLowerCase()} recipe to try at home`,
+                    anecdote: `This ${name.toLowerCase()} recipe has been a favorite among home cooks for its perfect balance of flavors and easy preparation method.`,
+                    chefTip: "Take your time with each step for the best results, and don't be afraid to adjust seasonings to your taste.",
+                    ingredients: ingredients,
+                    instructions: instructions,
                     source: 'ai_generated'
                 },
                 sideRecipe: {
-                    name: "Perfect Side",
-                    description: "A complementary side dish",
-                    anecdote: "The perfect accompaniment to complete your meal.",
-                    chefTip: "Serve fresh for best flavor.",
-                    ingredients: ["Seasonal vegetables", "Salt and pepper to taste"],
-                    instructions: ["Prepare your choice of sides", "Season and serve alongside the main dish"],
+                    name: "Classic Side",
+                    description: "Perfect accompaniment to complete your meal",
+                    anecdote: "A timeless side dish that pairs beautifully with any main course.",
+                    chefTip: "Fresh ingredients make all the difference in side dishes.",
+                    ingredients: ["Seasonal vegetables of choice", "Salt and pepper to taste", "Olive oil or butter"],
+                    instructions: ["Prepare vegetables according to preference", "Season appropriately", "Serve alongside main dish"],
                     source: 'ai_generated'
                 }
             };
         });
         
-        return { mealPairings: recipes.slice(0, 3) }; // Limit to 3 recipes
+        console.log("🔧 DEBUG: Successfully parsed", recipes.length, "recipes");
+        return { mealPairings: recipes.slice(0, 3) };
     }
     
+    console.log("🔧 DEBUG: No recipes found in conversational format");
     return null;
 }
 
